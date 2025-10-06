@@ -59,4 +59,5 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.storage)
 }
