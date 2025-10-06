@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "772076325319",
+    "project_id": "lazy-pizza-30811",
+    "storage_bucket": "lazy-pizza-30811.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:772076325319:android:36ec3d419b98019ed471e2",
+        "android_client_info": {
+          "package_name": "com.example.lazypizza"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7CGCT46f7M5Ytu6Iwwo6LXgkJYT-pjhI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
