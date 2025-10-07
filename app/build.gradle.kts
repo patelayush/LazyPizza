@@ -61,4 +61,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.storage)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.database)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }
