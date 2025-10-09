@@ -1,5 +1,6 @@
 package com.example.lazypizza.screens
 
+import MenuImage
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,7 +64,9 @@ import com.example.lazypizza.ui.theme.TextOnPrimary
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
+import com.example.lazypizza.viewmodel.Screen
 import com.example.lazypizza.viewmodel.imageBaseUrl
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -77,14 +82,27 @@ fun HomeScreen(
     HomeScreenContent(
         modifier = modifier,
         menuItems = viewModel.menuItems.value,
+        onPizzaSelected = {
+            viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
+            viewModel.handleNavigation(Screen.PizzaScreen)
+        }
     )
 }
 
 @Composable
-fun HomeScreenContent(modifier: Modifier = Modifier, menuItems: LazyPizzaResponse?) {
+fun HomeScreenContent(
+    modifier: Modifier = Modifier,
+    menuItems: LazyPizzaResponse?,
+    onPizzaSelected: (Int) -> Unit
+) {
     var searchedProduct by remember { mutableStateOf(TextFieldValue("")) }
+    val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    Log.d("HomeScreen", "scrollState.firstVisibleItemIndex: ${scrollState.firstVisibleItemIndex}")
     LazyColumn(
-        modifier = modifier.padding(horizontal = 16.dp).fillMaxSize().background(color = BG),
+        state = scrollState,
+        modifier = modifier
+            .padding(horizontal = 16.dp).fillMaxSize().background(color = BG),
     ) {
         stickyHeader {
             Column(Modifier.background(color = BG)) {
@@ -141,7 +159,25 @@ fun HomeScreenContent(modifier: Modifier = Modifier, menuItems: LazyPizzaRespons
                                     color = Outline, shape = RoundedCornerShape(8.dp), width = 1.dp
                                 )
                                 .clickable {
+                                    coroutineScope.launch {
+                                        when (it) {
+                                            "Pizza" -> scrollState.animateScrollToItem(0)
+                                            "Drinks" -> scrollState.animateScrollToItem(
+                                                (menuItems?.pizzas?.size ?: 1) - 1
+                                            )
 
+                                            "Sauces" -> scrollState.animateScrollToItem(
+                                                (menuItems?.pizzas?.size
+                                                    ?: 1) + (menuItems?.drinks?.size ?: 1) - 1
+                                            )
+
+                                            "Ice Cream" -> scrollState.animateScrollToItem(
+                                                (menuItems?.pizzas?.size
+                                                    ?: 1) + (menuItems?.drinks?.size
+                                                    ?: 1) + (menuItems?.sauces?.size ?: 1) - 1
+                                            )
+                                        }
+                                    }
                                 }
                         ) {
                             Text(
@@ -165,12 +201,12 @@ fun HomeScreenContent(modifier: Modifier = Modifier, menuItems: LazyPizzaRespons
                     fontFamily = FontFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = TextSeconday,
-                    modifier = Modifier.padding(top = 15.dp)
+                    modifier = Modifier.padding(top = 20.dp)
                 )
             }
             PizzaCard(
                 item = pizza,
-                onPizzaSelected = {},
+                onPizzaSelected = { onPizzaSelected(index) },
             )
         }
         itemsIndexed(menuItems?.drinks ?: listOf()) { index, drink ->
@@ -181,7 +217,7 @@ fun HomeScreenContent(modifier: Modifier = Modifier, menuItems: LazyPizzaRespons
                     fontFamily = FontFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = TextSeconday,
-                    modifier = Modifier.padding(top = 15.dp)
+                    modifier = Modifier.padding(top = 20.dp)
                 )
             }
             MenuItemCard(
@@ -198,7 +234,7 @@ fun HomeScreenContent(modifier: Modifier = Modifier, menuItems: LazyPizzaRespons
                     fontFamily = FontFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = TextSeconday,
-                    modifier = Modifier.padding(top = 15.dp)
+                    modifier = Modifier.padding(top = 20.dp)
                 )
             }
             MenuItemCard(
@@ -215,12 +251,12 @@ fun HomeScreenContent(modifier: Modifier = Modifier, menuItems: LazyPizzaRespons
                     fontFamily = FontFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = TextSeconday,
-                    modifier = Modifier.padding(top = 15.dp)
+                    modifier = Modifier.padding(top = 20.dp)
                 )
             }
             MenuItemCard(
                 item = icecream,
-                categoryName = "icecream",
+                categoryName = "ice cream",
                 onPizzaSelected = {},
             )
         }
@@ -232,7 +268,6 @@ fun PizzaCard(
     item: Pizza?,
     onPizzaSelected: () -> Unit
 ) {
-    var isImageLoading by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -245,35 +280,12 @@ fun PizzaCard(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val imageUrl = imageBaseUrl + "pizza/${item?.name ?: ""}.png"
-            Box(
-                modifier = Modifier.size(120.dp).background(color = SurfaceHighest),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .build(),
-                    contentDescription = "${item?.name ?: ""} image",
-                    modifier = Modifier.fillMaxWidth(),
-                    onLoading = {
-                        isImageLoading = true
-                    },
-                    onSuccess = {
-                        isImageLoading = false
-                    },
-                    onError = {
-                        Log.e("PizzaCard", "Error loading image: ${it.result.throwable}")
-                    }
-                )
-                if (isImageLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(40.dp),
-                        color = Primary
-                    )
-                }
-            }
-            Column(modifier = Modifier.padding(15.dp).heightIn(min = 105.dp)) {
+            MenuImage(
+                modifier = Modifier.size(120.dp).background(SurfaceHighest),
+                categoryName = "pizza",
+                itemName = item?.name
+            )
+            Column(modifier = Modifier.padding(15.dp).heightIn(min = 90.dp)) {
                 Text(
                     text = item?.name ?: "",
                     fontSize = 16.sp,
@@ -300,7 +312,6 @@ fun PizzaCard(
             }
         }
     }
-
 }
 
 @Composable
@@ -309,7 +320,6 @@ fun MenuItemCard(
     categoryName: String,
     onPizzaSelected: () -> Unit
 ) {
-    var isImageLoading by rememberSaveable { mutableStateOf(false) }
     Card(
         modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -322,39 +332,13 @@ fun MenuItemCard(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val imageUrl = imageBaseUrl + "$categoryName/${item?.name ?: ""}.png"
-            Box(
-                modifier = Modifier.size(120.dp).background(color = SurfaceHighest),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUrl)
-                        .build(),
-                    contentDescription = "${item?.name ?: ""} image",
-                    modifier = Modifier.fillMaxWidth(),
-                    onLoading = {
-                        isImageLoading = true
-                    },
-                    onSuccess = {
-                        isImageLoading = false
-                    },
-                    onError = {
-                        Log.e(
-                            "${categoryName}Card",
-                            "Error loading image: ${it.result.throwable} for url:$imageUrl"
-                        )
-                    }
-                )
-                if (isImageLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(40.dp),
-                        color = Primary
-                    )
-                }
-            }
+            MenuImage(
+                modifier = Modifier.size(120.dp).background(SurfaceHighest),
+                categoryName = categoryName,
+                itemName = item?.name
+            )
             Column(
-                modifier = Modifier.padding(15.dp).heightIn(min = 105.dp),
+                modifier = Modifier.padding(15.dp).heightIn(min = 90.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
@@ -374,11 +358,10 @@ fun MenuItemCard(
             }
         }
     }
-
 }
 
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    HomeScreenContent(modifier = Modifier, menuItems = null)
+    HomeScreenContent(modifier = Modifier, menuItems = null, onPizzaSelected = {})
 }

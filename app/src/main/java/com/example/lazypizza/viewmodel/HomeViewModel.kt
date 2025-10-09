@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lazypizza.repository.LazyPizzaResponse
+import com.example.lazypizza.repository.Pizza
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 
 enum class Screen {
     HomeScreen,
+    PizzaScreen
 }
 
 const val imageBaseUrl = "https://pl-coding.com/wp-content/uploads/lazypizza/"
@@ -24,6 +26,8 @@ class HomeViewModel : ViewModel() {
     val error = mutableStateOf<String>("")
 
     val menuItems = mutableStateOf<LazyPizzaResponse?>(null)
+
+    val selectedPizza = mutableStateOf<Pizza?>(null)
 
     var currentScreen = mutableStateOf<Screen>(Screen.HomeScreen)
         private set
