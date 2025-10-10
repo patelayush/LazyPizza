@@ -1,7 +1,7 @@
 package com.example.lazypizza.screens
 
 import MenuImage
-import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,19 +17,23 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,18 +41,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
 import com.example.lazypizza.R
 import com.example.lazypizza.repository.LazyPizzaResponse
 import com.example.lazypizza.repository.MenuItem
@@ -58,6 +61,7 @@ import com.example.lazypizza.ui.theme.BG
 import com.example.lazypizza.ui.theme.FontFamily
 import com.example.lazypizza.ui.theme.Outline
 import com.example.lazypizza.ui.theme.Primary
+import com.example.lazypizza.ui.theme.Primary8
 import com.example.lazypizza.ui.theme.SurfaceHigher
 import com.example.lazypizza.ui.theme.SurfaceHighest
 import com.example.lazypizza.ui.theme.TextOnPrimary
@@ -65,13 +69,16 @@ import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.Screen
-import com.example.lazypizza.viewmodel.imageBaseUrl
+import com.example.lazypizza.widescreens.WideHomeScreenContent
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel
+    isScreenWide: Boolean,
+    viewModel: HomeViewModel,
+    scrollState: LazyListState,
+    gridState: LazyGridState,
 ) {
     LaunchedEffect(Unit) {
         if (viewModel.menuItems.value == null) {
@@ -79,26 +86,41 @@ fun HomeScreen(
         }
     }
 
-    HomeScreenContent(
-        modifier = modifier,
-        menuItems = viewModel.menuItems.value,
-        onPizzaSelected = {
-            viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
-            viewModel.handleNavigation(Screen.PizzaScreen)
-        }
-    )
+    if(isScreenWide){
+        WideHomeScreenContent(
+            modifier = modifier,
+            menuItems = viewModel.menuItems.value,
+            gridState = gridState,
+            onPizzaSelected = {
+                viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
+                viewModel.handleNavigation(Screen.PizzaScreen)
+            }
+        )
+
+    }else {
+        HomeScreenContent(
+            modifier = modifier,
+            menuItems = viewModel.menuItems.value,
+            scrollState = scrollState,
+            onPizzaSelected = {
+                viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
+                viewModel.handleNavigation(Screen.PizzaScreen)
+            }
+        )
+    }
 }
 
 @Composable
 fun HomeScreenContent(
     modifier: Modifier = Modifier,
     menuItems: LazyPizzaResponse?,
+    scrollState: LazyListState,
     onPizzaSelected: (Int) -> Unit
 ) {
     var searchedProduct by remember { mutableStateOf(TextFieldValue("")) }
-    val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    Log.d("HomeScreen", "scrollState.firstVisibleItemIndex: ${scrollState.firstVisibleItemIndex}")
+    var noProductFound by rememberSaveable { mutableStateOf(false) }
+
     LazyColumn(
         state = scrollState,
         modifier = modifier
@@ -118,6 +140,26 @@ fun HomeScreenContent(
                     value = searchedProduct,
                     onValueChange = { newValue ->
                         searchedProduct = newValue
+                        noProductFound = !((menuItems?.pizzas?.any {
+                            it?.name?.contains(
+                                searchedProduct.text
+                            ) == true
+                        } == true) ||
+                                (menuItems?.iceCreams?.any {
+                                    it?.name?.contains(
+                                        searchedProduct.text
+                                    ) == true
+                                } == true) ||
+                                (menuItems?.drinks?.any {
+                                    it?.name?.contains(
+                                        searchedProduct.text
+                                    ) == true
+                                } == true) ||
+                                (menuItems?.sauces?.any {
+                                    it?.name?.contains(
+                                        searchedProduct.text
+                                    ) == true
+                                } == true))
                     },
                     modifier = Modifier.padding(top = 15.dp).fillMaxWidth()
                         .clip(RoundedCornerShape(28.dp)),
@@ -126,12 +168,11 @@ fun HomeScreenContent(
                         unfocusedContainerColor = TextOnPrimary,
                         unfocusedIndicatorColor = TextOnPrimary,
                         focusedIndicatorColor = TextOnPrimary
-
                     ),
                     leadingIcon = {
                         Icon(
                             painter = painterResource(R.drawable.ic_search_refraction),
-                            contentDescription = "",
+                            contentDescription = "Search",
                             tint = Primary,
                             modifier = Modifier.size(15.dp)
                         )
@@ -154,7 +195,7 @@ fun HomeScreenContent(
                     menuCategories.forEach {
                         Box(
                             modifier = Modifier
-                                .padding(top = 15.dp)
+                                .padding(top = 15.dp, bottom = 5.dp)
                                 .border(
                                     color = Outline, shape = RoundedCornerShape(8.dp), width = 1.dp
                                 )
@@ -193,7 +234,9 @@ fun HomeScreenContent(
                 }
             }
         }
-        itemsIndexed(menuItems?.pizzas ?: listOf()) { index, pizza ->
+        itemsIndexed(
+            menuItems?.pizzas?.filter { it?.name?.contains(searchedProduct.text, true) == true }
+                ?: listOf()) { index, pizza ->
             if (index == 0) {
                 Text(
                     text = "PIZZA",
@@ -201,7 +244,7 @@ fun HomeScreenContent(
                     fontFamily = FontFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = TextSeconday,
-                    modifier = Modifier.padding(top = 20.dp)
+                    modifier = Modifier.padding(top = 15.dp)
                 )
             }
             PizzaCard(
@@ -209,7 +252,9 @@ fun HomeScreenContent(
                 onPizzaSelected = { onPizzaSelected(index) },
             )
         }
-        itemsIndexed(menuItems?.drinks ?: listOf()) { index, drink ->
+        itemsIndexed(
+            menuItems?.drinks?.filter { it?.name?.contains(searchedProduct.text, true) == true }
+                ?: listOf()) { index, drink ->
             if (index == 0) {
                 Text(
                     text = "DRINKS",
@@ -223,10 +268,14 @@ fun HomeScreenContent(
             MenuItemCard(
                 item = drink,
                 categoryName = "drink",
-                onPizzaSelected = {},
+                quantityAdded = {},
+                quantityRemoved = {},
+                deleteCart = {},
             )
         }
-        itemsIndexed(menuItems?.sauces ?: listOf()) { index, sauce ->
+        itemsIndexed(
+            menuItems?.sauces?.filter { it?.name?.contains(searchedProduct.text, true) == true }
+                ?: listOf()) { index, sauce ->
             if (index == 0) {
                 Text(
                     text = "SAUCES",
@@ -240,10 +289,14 @@ fun HomeScreenContent(
             MenuItemCard(
                 item = sauce,
                 categoryName = "sauce",
-                onPizzaSelected = {},
+                quantityAdded = {},
+                quantityRemoved = {},
+                deleteCart = {},
             )
         }
-        itemsIndexed(menuItems?.iceCreams ?: listOf()) { index, icecream ->
+        itemsIndexed(
+            menuItems?.iceCreams?.filter { it?.name?.contains(searchedProduct.text, true) == true }
+                ?: listOf()) { index, icecream ->
             if (index == 0) {
                 Text(
                     text = "ICE CREAM",
@@ -257,8 +310,23 @@ fun HomeScreenContent(
             MenuItemCard(
                 item = icecream,
                 categoryName = "ice cream",
-                onPizzaSelected = {},
+                quantityAdded = {},
+                quantityRemoved = {},
+                deleteCart = {},
             )
+        }
+        item {
+            if(noProductFound) {
+                Text(
+                    text = "No results found for your query.",
+                    fontSize = 16.sp,
+                    fontFamily = FontFamily,
+                    fontWeight = FontWeight.Normal,
+                    color = TextSeconday,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
+                )
+            }
         }
     }
 }
@@ -318,15 +386,18 @@ fun PizzaCard(
 fun MenuItemCard(
     item: MenuItem?,
     categoryName: String,
-    onPizzaSelected: () -> Unit
+    quantityAdded: () -> Unit,
+    quantityRemoved: () -> Unit,
+    deleteCart: () -> Unit
 ) {
+    var quantity by rememberSaveable { mutableIntStateOf(0) }
+    var itemTotal by rememberSaveable { mutableFloatStateOf(0f) }
     Card(
         modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SurfaceHigher
-        ),
-        onClick = onPizzaSelected
+        )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -341,20 +412,157 @@ fun MenuItemCard(
                 modifier = Modifier.padding(15.dp).heightIn(min = 90.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = item?.name ?: "",
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily,
-                    fontWeight = FontWeight.Medium,
-                    color = TextPrimary,
-                )
-                Text(
-                    text = item?.price?.let { "$$it" } ?: "",
-                    fontSize = 24.sp,
-                    fontFamily = FontFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = item?.name ?: "",
+                        fontSize = 16.sp,
+                        fontFamily = FontFamily,
+                        fontWeight = FontWeight.Medium,
+                        color = TextPrimary,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .alpha(if (quantity > 0) 1f else 0f)
+                            .clickable(enabled = quantity > 0) {
+                                quantity = 0
+                                itemTotal = 0f
+                            }
+                            .border(
+                                width = 1.dp,
+                                color = Outline,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .size(22.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_trash),
+                            contentDescription = "Trash Icon",
+                            tint = Primary,
+                            modifier = Modifier
+                                .size(14.dp)
+                        )
+                    }
+
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (quantity == 0) {
+                        Text(
+                            text = item?.price?.let { "$$it" } ?: "",
+                            fontSize = 24.sp,
+                            fontFamily = FontFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextPrimary,
+                        )
+                    } else {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(15.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .alpha(if (quantity > 0) 1f else 0f)
+                                    .clickable(enabled = quantity > 0) {
+                                        quantity--
+                                        itemTotal -= (item?.price?.toFloat() ?: 0f)
+                                    }
+                                    .border(
+                                        width = 1.dp,
+                                        color = Outline,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .size(22.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_minus),
+                                    contentDescription = "Minus Icon",
+                                    tint = TextSeconday,
+                                    modifier = Modifier
+                                )
+                            }
+                            Text(
+                                text = quantity.toString(),
+                                fontSize = 24.sp,
+                                fontFamily = FontFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimary
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .alpha(if (quantity > 0) 1f else 0f)
+                                    .clickable(enabled = quantity > 0) {
+                                        quantity++
+                                        itemTotal += (item?.price?.toFloat() ?: 0f)
+                                    }
+                                    .border(
+                                        width = 1.dp,
+                                        color = Outline,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .size(22.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_plus),
+                                    contentDescription = "Plus Icon",
+                                    tint = TextSeconday,
+                                    modifier = Modifier
+                                )
+                            }
+                        }
+                    }
+                    Box(contentAlignment = Alignment.BottomEnd) {
+                        OutlinedButton(
+                            enabled = quantity == 0,
+                            border = BorderStroke(1.dp, Primary8),
+                            onClick = {
+                                if (quantity == 0) {
+                                    quantity = 1
+                                }
+                                itemTotal = item?.price?.toFloat() ?: 0f
+                            },
+                            modifier = Modifier.alpha(
+                                if (quantity == 0) 1f else 0f
+                            )
+                        ) {
+                            Text(
+                                text = "Add to Cart",
+                                fontSize = 15.sp,
+                                fontFamily = FontFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Primary,
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.alpha(if(quantity > 0) 1f else 0f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "$$itemTotal",
+                                fontSize = 24.sp,
+                                fontFamily = FontFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimary,
+                            )
+                            Text(
+                                text = "$quantity x $${item?.price ?: 0f}",
+                                fontSize = 12.sp,
+                                fontFamily = FontFamily,
+                                fontWeight = FontWeight.Normal,
+                                color = TextSeconday,
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -363,5 +571,9 @@ fun MenuItemCard(
 @Preview
 @Composable
 private fun HomeScreenPreview() {
-    HomeScreenContent(modifier = Modifier, menuItems = null, onPizzaSelected = {})
+    HomeScreenContent(
+        modifier = Modifier,
+        menuItems = null,
+        scrollState = rememberLazyListState(),
+        onPizzaSelected = {})
 }

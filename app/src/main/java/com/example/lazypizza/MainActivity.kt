@@ -6,12 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -59,6 +63,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             LazyPizzaTheme {
                 val homeViewModel = viewModel<HomeViewModel>()
+                val isScreenWide = LocalConfiguration.current.screenWidthDp > 840
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
@@ -112,7 +117,9 @@ class MainActivity : ComponentActivity() {
                                     Box(
                                         modifier = Modifier.padding(start = 15.dp).background(
                                             color = TextSecondary8, shape = CircleShape
-                                        )
+                                        ).clickable {
+                                            homeViewModel.handleNavigation(Screen.HomeScreen)
+                                        }
                                     ) {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -130,19 +137,26 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
+                    val scrollState = rememberLazyListState()
+                    val gridState = rememberLazyGridState()
                     Box(
                         Modifier.fillMaxSize().padding(innerPadding),
                         contentAlignment = Alignment.Center
                     ) {
                         when (homeViewModel.currentScreen.value) {
-                            Screen.HomeScreen -> HomeScreen(
-                                modifier = Modifier,
-                                viewModel = homeViewModel,
-                            )
+                            Screen.HomeScreen ->
+                                HomeScreen(
+                                    modifier = Modifier,
+                                    isScreenWide = isScreenWide,
+                                    viewModel = homeViewModel,
+                                    scrollState = scrollState,
+                                    gridState = gridState,
+                                )
 
                             Screen.PizzaScreen -> PizzaScreen(
                                 modifier = Modifier,
-                                viewModel = homeViewModel
+                                viewModel = homeViewModel,
+                                isScreenWide = isScreenWide,
                             )
                         }
 

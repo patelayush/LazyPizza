@@ -1,24 +1,25 @@
 package com.example.lazypizza.screens
 
 import MenuImage
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,14 +54,18 @@ import com.example.lazypizza.ui.theme.TextOnPrimary
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
+import com.example.lazypizza.viewmodel.Screen
 
 @Composable
-fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
+fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
     Box(modifier.fillMaxSize()) {
         PizzaScreenContent(
             pizza = viewModel.selectedPizza.value,
             toppings = viewModel.menuItems.value?.toppings
         )
+    }
+    BackHandler {
+        viewModel.handleNavigation(Screen.HomeScreen)
     }
 }
 
@@ -71,13 +77,19 @@ fun PizzaScreenContent(
 ) {
     Box(Modifier.fillMaxSize()) {
         var cartTotal by rememberSaveable { mutableFloatStateOf(pizza?.price?.toFloat() ?: 0f) }
-        Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        Column {
             MenuImage(
                 modifier = Modifier.fillMaxWidth().height(240.dp).background(SurfaceHighest),
                 categoryName = "pizza",
                 itemName = pizza?.name
             )
-            Column(Modifier.padding(horizontal = 15.dp)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .shadow(10.dp, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(color = SurfaceHigher, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .padding(horizontal = 15.dp)
+            ) {
                 Text(
                     text = pizza?.name ?: "",
                     fontSize = 24.sp,
@@ -102,17 +114,21 @@ fun PizzaScreenContent(
                     modifier = Modifier.padding(top = 10.dp)
                 )
             }
-            FlowRow(
-                modifier = Modifier.padding(horizontal = 10.dp).padding(bottom = 70.dp),
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalArrangement = Arrangement.spacedBy(5.dp),
+                modifier = Modifier.fillMaxWidth().background(color = SurfaceHigher)
+                    .padding(horizontal = 10.dp)
             ) {
-                toppings?.forEach { topping ->
+                items(toppings ?: emptyList<MenuItem?>()) { topping ->
                     var quantity by rememberSaveable { mutableIntStateOf(0) }
                     var cardSelected by rememberSaveable { mutableStateOf(false) }
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 5.dp, vertical = 5.dp)
+                            .shadow(4.dp, shape = RoundedCornerShape(12.dp))
                             .background(color = SurfaceHigher, RoundedCornerShape(12.dp))
                             .clickable {
                                 if (quantity == 0) {
@@ -120,13 +136,11 @@ fun PizzaScreenContent(
                                     cartTotal += (topping?.price?.toFloat() ?: 0f)
                                 }
                                 cardSelected = true
-                            }.then(
-                                if (cardSelected) Modifier.border(
-                                    width = 1.dp,
-                                    color = Primary,
-                                    shape = RoundedCornerShape(12.dp)
-                                ) else Modifier
-                            ),
+                            }.border(
+                                width = 1.dp,
+                                color = if (cardSelected) Primary else Outline,
+                                shape = RoundedCornerShape(12.dp),
+                            )
                     ) {
                         Column(
                             modifier = Modifier.padding(vertical = 15.dp, horizontal = 12.dp),
@@ -134,7 +148,8 @@ fun PizzaScreenContent(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             MenuImage(
-                                modifier = Modifier.background(Primary8, CircleShape).padding(5.dp)
+                                modifier = Modifier.background(Primary8, CircleShape)
+                                    .padding(5.dp)
                                     .size(56.dp),
                                 categoryName = "toppings",
                                 itemName = topping?.name
@@ -224,6 +239,7 @@ fun PizzaScreenContent(
                         }
                     }
                 }
+                item { Spacer(Modifier.height(80.dp)) }
             }
         }
         Box(
@@ -236,7 +252,7 @@ fun PizzaScreenContent(
                     ),
                     shape = RoundedCornerShape(100.dp)
                 )
-                .clickable{
+                .clickable {
 
                 },
             contentAlignment = Alignment.Center
