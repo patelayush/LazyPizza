@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -142,22 +143,22 @@ fun HomeScreenContent(
                         searchedProduct = newValue
                         noProductFound = !((menuItems?.pizzas?.any {
                             it?.name?.contains(
-                                searchedProduct.text
+                                searchedProduct.text, true
                             ) == true
                         } == true) ||
                                 (menuItems?.iceCreams?.any {
                                     it?.name?.contains(
-                                        searchedProduct.text
+                                        searchedProduct.text, true
                                     ) == true
                                 } == true) ||
                                 (menuItems?.drinks?.any {
                                     it?.name?.contains(
-                                        searchedProduct.text
+                                        searchedProduct.text, true
                                     ) == true
                                 } == true) ||
                                 (menuItems?.sauces?.any {
                                     it?.name?.contains(
-                                        searchedProduct.text
+                                        searchedProduct.text, true
                                     ) == true
                                 } == true))
                     },
@@ -327,6 +328,9 @@ fun HomeScreenContent(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
                 )
             }
+        }
+        item {
+            Spacer(Modifier.height(30.dp))
         }
     }
 }
@@ -547,7 +551,7 @@ fun MenuItemCard(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "$$itemTotal",
+                                text = "$%.2f".format(itemTotal),
                                 fontSize = 24.sp,
                                 fontFamily = FontFamily,
                                 fontWeight = FontWeight.SemiBold,

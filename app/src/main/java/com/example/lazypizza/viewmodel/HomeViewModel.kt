@@ -19,7 +19,7 @@ enum class Screen {
 
 const val imageBaseUrl = "https://pl-coding.com/wp-content/uploads/lazypizza/"
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel() : ViewModel() {
     val databaseRef = Firebase.database.getReference("menu/")
     val isLoading = mutableStateOf<Boolean>(false)
 

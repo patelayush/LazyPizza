@@ -1,5 +1,7 @@
 package com.example.lazypizza
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,6 +31,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,6 +51,7 @@ import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.Screen
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +67,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             LazyPizzaTheme {
                 val homeViewModel = viewModel<HomeViewModel>()
+                val context = LocalContext.current
                 val isScreenWide = LocalConfiguration.current.screenWidthDp > 840
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -107,7 +112,13 @@ class MainActivity : ComponentActivity() {
                                             fontSize = 16.sp,
                                             fontFamily = FontFamily,
                                             fontWeight = FontWeight.Normal,
-                                            color = TextPrimary
+                                            color = TextPrimary,
+                                            modifier = Modifier.clickable{
+                                                val phoneNumber = "tel:5553217890"
+                                                val intent = Intent(Intent.ACTION_DIAL,
+                                                    phoneNumber.toUri())
+                                                context.startActivity(intent)
+                                            }
                                         )
                                     }
                                 }
@@ -140,7 +151,7 @@ class MainActivity : ComponentActivity() {
                     val scrollState = rememberLazyListState()
                     val gridState = rememberLazyGridState()
                     Box(
-                        Modifier.fillMaxSize().padding(innerPadding),
+                        Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()),
                         contentAlignment = Alignment.Center
                     ) {
                         when (homeViewModel.currentScreen.value) {

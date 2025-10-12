@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -92,7 +93,7 @@ fun WideHomeScreenContent(
         modifier
             .padding(horizontal = 16.dp).fillMaxSize().background(color = BG)
     ) {
-       /* Image(
+        Image(
             painter = painterResource(R.drawable.banner),
             contentDescription = "banner",
             modifier = Modifier.fillMaxWidth().height(150.dp)
@@ -106,22 +107,22 @@ fun WideHomeScreenContent(
                 searchedProduct = newValue
                 noProductFound = !((menuItems?.pizzas?.any {
                     it?.name?.contains(
-                        searchedProduct.text
+                        searchedProduct.text, true
                     ) == true
                 } == true) ||
                         (menuItems?.iceCreams?.any {
                             it?.name?.contains(
-                                searchedProduct.text
+                                searchedProduct.text, true
                             ) == true
                         } == true) ||
                         (menuItems?.drinks?.any {
                             it?.name?.contains(
-                                searchedProduct.text
+                                searchedProduct.text, true
                             ) == true
                         } == true) ||
                         (menuItems?.sauces?.any {
                             it?.name?.contains(
-                                searchedProduct.text
+                                searchedProduct.text, true
                             ) == true
                         } == true))
             },
@@ -150,8 +151,7 @@ fun WideHomeScreenContent(
                     color = TextSeconday
                 )
             }
-        )*/
-
+        )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -312,6 +312,9 @@ fun WideHomeScreenContent(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp)
                     )
                 }
+            }
+            item{
+                Spacer(Modifier.height(30.dp))
             }
         }
     }

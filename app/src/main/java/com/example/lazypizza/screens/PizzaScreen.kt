@@ -55,14 +55,22 @@ import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.Screen
+import com.example.lazypizza.widescreens.WidePizzaScreenContent
 
 @Composable
 fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
     Box(modifier.fillMaxSize()) {
-        PizzaScreenContent(
-            pizza = viewModel.selectedPizza.value,
-            toppings = viewModel.menuItems.value?.toppings
-        )
+        if(isScreenWide){
+            WidePizzaScreenContent(
+                pizza = viewModel.selectedPizza.value,
+                toppings = viewModel.menuItems.value?.toppings
+            )
+        } else {
+            PizzaScreenContent(
+                pizza = viewModel.selectedPizza.value,
+                toppings = viewModel.menuItems.value?.toppings
+            )
+        }
     }
     BackHandler {
         viewModel.handleNavigation(Screen.HomeScreen)
@@ -73,9 +81,9 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
 fun PizzaScreenContent(
     modifier: Modifier = Modifier,
     pizza: Pizza?,
-    toppings: List<MenuItem?>? = null
+    toppings: List<MenuItem?>? = null,
 ) {
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         var cartTotal by rememberSaveable { mutableFloatStateOf(pizza?.price?.toFloat() ?: 0f) }
         Column {
             MenuImage(
@@ -214,7 +222,7 @@ fun PizzaScreenContent(
                                     modifier = Modifier
                                         .alpha(if (quantity > 0 && cardSelected) 1f else 0f)
                                         .clickable(
-                                            enabled = quantity > 0 && cardSelected
+                                            enabled = quantity > 0 && cardSelected && quantity < 3
                                         ) {
                                             quantity++
                                             cartTotal += (topping?.price?.toFloat() ?: 0f)
@@ -230,7 +238,7 @@ fun PizzaScreenContent(
                                     Icon(
                                         painter = painterResource(R.drawable.ic_plus),
                                         contentDescription = "Plus Icon",
-                                        tint = TextSeconday,
+                                        tint = if(quantity < 3) TextSeconday else Outline,
                                         modifier = Modifier
                                     )
                                 }
