@@ -45,7 +45,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lazypizza.screens.CartScreen
 import com.example.lazypizza.screens.MenuScreen
-import com.example.lazypizza.screens.OrderHistory
+import com.example.lazypizza.screens.OrderHistoryScreen
 import com.example.lazypizza.screens.PizzaScreen
 import com.example.lazypizza.ui.theme.FontFamily
 import com.example.lazypizza.ui.theme.LazyPizzaTheme
@@ -249,7 +249,7 @@ class MainActivity : ComponentActivity() {
                                 isScreenWide = isScreenWide,
                             )
 
-                            Screen.OrderHistoryScreen -> OrderHistory(
+                            Screen.OrderHistoryScreen -> OrderHistoryScreen(
                                 modifier = Modifier,
                                 viewModel = homeViewModel,
                                 isScreenWide = isScreenWide,

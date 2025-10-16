@@ -26,20 +26,20 @@ import com.example.lazypizza.viewmodel.Screen
 import com.example.lazypizza.widescreens.WideOrderHistoryScreenContent
 
 @Composable
-fun OrderHistory(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
+fun OrderHistoryScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
     Box(modifier.fillMaxSize().background(SurfaceHighest)) {
         if (isScreenWide) {
             WideOrderHistoryScreenContent(
                 cartItems = viewModel.cartItems,
                 loginClicked = {
-                    viewModel.switchTab(Screen.MenuScreen)
+                    //TODO()
                 }
             )
         } else {
             OrderHistoryScreenContent(
                 cartItems = viewModel.cartItems,
                 loginClicked = {
-                   TODO()
+                   //TODO()
                 }
             )
         }
