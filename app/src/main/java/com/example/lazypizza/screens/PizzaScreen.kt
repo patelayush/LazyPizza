@@ -1,5 +1,6 @@
 package com.example.lazypizza.screens
 
+import GradientButton
 import MenuImage
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -33,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,21 +46,19 @@ import com.example.lazypizza.ui.theme.FontFamily
 import com.example.lazypizza.ui.theme.Outline
 import com.example.lazypizza.ui.theme.Primary
 import com.example.lazypizza.ui.theme.Primary8
-import com.example.lazypizza.ui.theme.PrimaryGradientEnd
-import com.example.lazypizza.ui.theme.PrimaryGradientStart
 import com.example.lazypizza.ui.theme.SurfaceHigher
 import com.example.lazypizza.ui.theme.SurfaceHighest
-import com.example.lazypizza.ui.theme.TextOnPrimary
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
+import com.example.lazypizza.viewmodel.MenuStack
 import com.example.lazypizza.viewmodel.Screen
 import com.example.lazypizza.widescreens.WidePizzaScreenContent
 
 @Composable
 fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
     Box(modifier.fillMaxSize()) {
-        if(isScreenWide){
+        if (isScreenWide) {
             WidePizzaScreenContent(
                 pizza = viewModel.selectedPizza.value,
                 toppings = viewModel.menuItems.value?.toppings
@@ -73,7 +71,7 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
         }
     }
     BackHandler {
-        viewModel.handleNavigation(Screen.MenuScreen)
+        viewModel.handleMenuStackNavigation(MenuStack.MenuScreen)
     }
 }
 
@@ -95,7 +93,10 @@ fun PizzaScreenContent(
                 Modifier
                     .fillMaxWidth()
                     .shadow(10.dp, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                    .background(color = SurfaceHigher, shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(
+                        color = SurfaceHigher,
+                        shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    )
                     .padding(horizontal = 15.dp)
             ) {
                 Text(
@@ -238,7 +239,7 @@ fun PizzaScreenContent(
                                     Icon(
                                         painter = painterResource(R.drawable.ic_plus),
                                         contentDescription = "Plus Icon",
-                                        tint = if(quantity < 3) TextSeconday else Outline,
+                                        tint = if (quantity < 3) TextSeconday else Outline,
                                         modifier = Modifier
                                     )
                                 }
@@ -250,30 +251,15 @@ fun PizzaScreenContent(
                 item { Spacer(Modifier.height(100.dp)) }
             }
         }
-        Box(
-            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(15.dp).padding(bottom = 10.dp)
-                .background(
-                    brush = Brush.linearGradient(
-                        listOf(
-                            PrimaryGradientStart, PrimaryGradientEnd
-                        )
-                    ),
-                    shape = RoundedCornerShape(100.dp)
-                )
-                .clickable {
-
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Add to Cart for $${cartTotal}",
-                fontSize = 15.sp,
-                fontFamily = FontFamily,
-                fontWeight = FontWeight.SemiBold,
-                color = TextOnPrimary,
-                modifier = Modifier.padding(vertical = 10.dp)
-            )
-        }
+        GradientButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(15.dp)
+                .padding(bottom = 10.dp),
+            text = "Add to Cart for $${cartTotal}",
+            onCLick = {}
+        )
     }
 }
 

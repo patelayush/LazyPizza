@@ -1,8 +1,12 @@
 package com.example.lazypizza.viewmodel
 
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.lazypizza.R
+import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.repository.LazyPizzaResponse
 import com.example.lazypizza.repository.Pizza
 import com.google.firebase.Firebase
@@ -12,11 +16,15 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import kotlinx.coroutines.launch
 
-enum class Screen(val title: String) {
+enum class Screen(val title: String, val icon: Int? = null) {
+    MenuScreen("Menu", R.drawable.ic_book),
+    CartScreen("Cart", R.drawable.ic_cart),
+    OrderHistoryScreen("History", R.drawable.ic_history)
+}
+
+enum class MenuStack(val title: String) {
     MenuScreen("Menu"),
     PizzaScreen("Pizza Details"),
-    CartScreen("Cart"),
-    OrderHistoryScreen("History")
 }
 
 const val imageBaseUrl = "https://pl-coding.com/wp-content/uploads/lazypizza/"
@@ -31,8 +39,14 @@ class HomeViewModel() : ViewModel() {
 
     val selectedPizza = mutableStateOf<Pizza?>(null)
 
-    var currentScreen = mutableStateOf<Screen>(Screen.MenuScreen)
+    var currentMenuStackScreen = mutableStateOf<MenuStack>(MenuStack.MenuScreen)
         private set
+
+    var currentTabSelected = mutableStateOf<Screen>(Screen.MenuScreen)
+        private set
+
+    var cartTotal = mutableFloatStateOf(0f)
+    var cartItems = mutableStateListOf<CartItem>()
 
     fun fetchData() {
         viewModelScope.launch {
@@ -56,7 +70,11 @@ class HomeViewModel() : ViewModel() {
         })
     }
 
-    fun handleNavigation(screen: Screen) {
-        currentScreen.value = screen
+    fun handleMenuStackNavigation(screen: MenuStack) {
+        currentMenuStackScreen.value = screen
+    }
+
+    fun switchTab(screen: Screen) {
+        currentTabSelected.value = screen
     }
 }

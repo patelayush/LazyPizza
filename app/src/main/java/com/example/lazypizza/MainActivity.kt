@@ -30,10 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -46,6 +42,7 @@ import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.lazypizza.screens.CartScreen
 import com.example.lazypizza.screens.MenuScreen
 import com.example.lazypizza.screens.PizzaScreen
 import com.example.lazypizza.ui.theme.FontFamily
@@ -57,6 +54,7 @@ import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSecondary8
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
+import com.example.lazypizza.viewmodel.MenuStack
 import com.example.lazypizza.viewmodel.Screen
 import kotlinx.coroutines.launch
 
@@ -76,13 +74,12 @@ class MainActivity : ComponentActivity() {
                 val homeViewModel = viewModel<HomeViewModel>()
                 val context = LocalContext.current
                 val isScreenWide = LocalConfiguration.current.screenWidthDp > 840
-                var currentTabSelected by rememberSaveable { mutableStateOf(Screen.MenuScreen) }
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopAppBar(
                             title = {
-                                if (homeViewModel.currentScreen.value == Screen.MenuScreen) {
+                                if (homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -103,7 +100,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                if (homeViewModel.currentScreen.value == Screen.MenuScreen) {
+                                if (homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -134,12 +131,14 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             navigationIcon = {
-                                if (homeViewModel.currentScreen.value == Screen.PizzaScreen) {
+                                if (homeViewModel.currentMenuStackScreen.value == MenuStack.PizzaScreen) {
                                     Box(
                                         modifier = Modifier.padding(start = 15.dp).background(
                                             color = TextSecondary8, shape = CircleShape
                                         ).clickable {
-                                            homeViewModel.handleNavigation(Screen.MenuScreen)
+                                            homeViewModel.handleMenuStackNavigation(
+                                                MenuStack.MenuScreen
+                                            )
                                         }
                                     ) {
                                         Icon(
@@ -158,7 +157,7 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     bottomBar = {
-                        if (homeViewModel.currentScreen.value != Screen.PizzaScreen) {
+                        if (homeViewModel.currentMenuStackScreen.value != MenuStack.PizzaScreen) {
                             BottomAppBar(
                                 containerColor = SurfaceHigher,
                                 tonalElevation = 8.dp
@@ -167,35 +166,22 @@ class MainActivity : ComponentActivity() {
                                     Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceAround
                                 ) {
-                                    BottomBarIcon(
-                                        modifier = Modifier.weight(1f),
-                                        tabName = Screen.MenuScreen,
-                                        currentTabSelected = currentTabSelected,
-                                        tabIcon = R.drawable.ic_book,
-                                        onTabClick = { selectedTab ->
-                                            currentTabSelected = selectedTab
-                                            homeViewModel.handleNavigation(selectedTab)
-                                        }
-                                    )
-                                    BottomBarIcon(
-                                        modifier = Modifier.weight(1f),
-                                        tabName = Screen.CartScreen,
-                                        currentTabSelected = currentTabSelected,
-                                        tabIcon = R.drawable.ic_cart,
-                                        subLabel = null,
-                                        onTabClick = { selectedTab ->
-                                            currentTabSelected = selectedTab
-                                        }
-                                    )
-                                    BottomBarIcon(
-                                        modifier = Modifier.weight(1f),
-                                        tabName = Screen.OrderHistoryScreen,
-                                        currentTabSelected = currentTabSelected,
-                                        tabIcon = R.drawable.ic_history,
-                                        onTabClick = { selectedTab ->
-                                            currentTabSelected = selectedTab
-                                        }
-                                    )
+                                    Screen.entries.forEach { screen ->
+                                        BottomBarIcon(
+                                            modifier = Modifier.weight(1f),
+                                            tabName = screen,
+                                            currentTabSelected = homeViewModel.currentTabSelected.value,
+                                            tabIcon = screen.icon,
+                                            onTabClick = { selectedTab ->
+                                                if (screen == Screen.MenuScreen) {
+                                                    homeViewModel.handleMenuStackNavigation(
+                                                        MenuStack.MenuScreen
+                                                    )
+                                                }
+                                                homeViewModel.switchTab(selectedTab)
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -207,17 +193,25 @@ class MainActivity : ComponentActivity() {
                         Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()),
                         contentAlignment = Alignment.Center
                     ) {
-                        when (homeViewModel.currentScreen.value) {
+                        when (homeViewModel.currentTabSelected.value) {
                             Screen.MenuScreen ->
-                                MenuScreen(
-                                    modifier = Modifier,
-                                    isScreenWide = isScreenWide,
-                                    viewModel = homeViewModel,
-                                    scrollState = scrollState,
-                                    gridState = gridState,
-                                )
+                                when (homeViewModel.currentMenuStackScreen.value) {
+                                    MenuStack.MenuScreen -> MenuScreen(
+                                        modifier = Modifier,
+                                        isScreenWide = isScreenWide,
+                                        viewModel = homeViewModel,
+                                        scrollState = scrollState,
+                                        gridState = gridState,
+                                    )
 
-                            Screen.PizzaScreen -> PizzaScreen(
+                                    MenuStack.PizzaScreen -> PizzaScreen(
+                                        modifier = Modifier,
+                                        viewModel = homeViewModel,
+                                        isScreenWide = isScreenWide,
+                                    )
+                                }
+
+                            Screen.CartScreen -> CartScreen(
                                 modifier = Modifier,
                                 viewModel = homeViewModel,
                                 isScreenWide = isScreenWide,

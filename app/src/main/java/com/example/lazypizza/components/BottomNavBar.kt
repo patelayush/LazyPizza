@@ -30,7 +30,7 @@ import com.example.lazypizza.viewmodel.Screen
 fun BottomBarIcon(
     modifier: Modifier = Modifier,
     tabName: Screen,
-    tabIcon: Int,
+    tabIcon: Int? = null,
     subLabel: String? = null,
     currentTabSelected: Screen,
     onTabClick: (Screen) -> Unit,
@@ -44,20 +44,22 @@ fun BottomBarIcon(
             }
     ) {
         Box {
-            Box(
-                modifier = Modifier.background(
-                    color = if (currentTabSelected == tabName) Primary8 else SurfaceHigher,
-                    shape = CircleShape
-                ).padding(10.dp)
-            ) {
-                Image(
-                    painter = painterResource(tabIcon),
-                    contentDescription = "Menu",
-                    colorFilter = ColorFilter.tint(
-                        if (currentTabSelected == tabName) Primary else TextSeconday
-                    ),
-                    modifier = Modifier.size(22.dp)
-                )
+            tabIcon?.let {
+                Box(
+                    modifier = Modifier.background(
+                        color = if (currentTabSelected == tabName) Primary8 else SurfaceHigher,
+                        shape = CircleShape
+                    ).padding(10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(it),
+                        contentDescription = "Menu",
+                        colorFilter = ColorFilter.tint(
+                            if (currentTabSelected == tabName) Primary else TextSeconday
+                        ),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
             subLabel?.let {
                 Box(

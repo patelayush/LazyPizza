@@ -70,6 +70,7 @@ import com.example.lazypizza.ui.theme.TextOnPrimary
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
+import com.example.lazypizza.viewmodel.MenuStack
 import com.example.lazypizza.viewmodel.Screen
 import com.example.lazypizza.widescreens.WideMenuScreenContent
 import kotlinx.coroutines.launch
@@ -95,7 +96,7 @@ fun MenuScreen(
             gridState = gridState,
             onPizzaSelected = {
                 viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
-                viewModel.handleNavigation(Screen.PizzaScreen)
+                viewModel.handleMenuStackNavigation(MenuStack.PizzaScreen)
             }
         )
     } else {
@@ -105,7 +106,7 @@ fun MenuScreen(
             scrollState = scrollState,
             onPizzaSelected = {
                 viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
-                viewModel.handleNavigation(Screen.PizzaScreen)
+                viewModel.handleMenuStackNavigation(MenuStack.PizzaScreen)
             }
         )
     }
