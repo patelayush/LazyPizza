@@ -12,9 +12,11 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import kotlinx.coroutines.launch
 
-enum class Screen {
-    HomeScreen,
-    PizzaScreen
+enum class Screen(val title: String) {
+    MenuScreen("Menu"),
+    PizzaScreen("Pizza Details"),
+    CartScreen("Cart"),
+    OrderHistoryScreen("History")
 }
 
 const val imageBaseUrl = "https://pl-coding.com/wp-content/uploads/lazypizza/"
@@ -29,7 +31,7 @@ class HomeViewModel() : ViewModel() {
 
     val selectedPizza = mutableStateOf<Pizza?>(null)
 
-    var currentScreen = mutableStateOf<Screen>(Screen.HomeScreen)
+    var currentScreen = mutableStateOf<Screen>(Screen.MenuScreen)
         private set
 
     fun fetchData() {

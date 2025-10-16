@@ -73,7 +73,7 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
         }
     }
     BackHandler {
-        viewModel.handleNavigation(Screen.HomeScreen)
+        viewModel.handleNavigation(Screen.MenuScreen)
     }
 }
 
@@ -247,11 +247,11 @@ fun PizzaScreenContent(
                         }
                     }
                 }
-                item { Spacer(Modifier.height(80.dp)) }
+                item { Spacer(Modifier.height(100.dp)) }
             }
         }
         Box(
-            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(15.dp)
+            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(15.dp).padding(bottom = 10.dp)
                 .background(
                     brush = Brush.linearGradient(
                         listOf(

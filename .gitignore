@@ -18,3 +18,4 @@ app/google-services.json
 .idea/deploymentTargetSelector.xml
 Demo.zip
 *.webm
+/.idea

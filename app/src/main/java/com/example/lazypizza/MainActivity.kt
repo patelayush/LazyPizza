@@ -1,7 +1,7 @@
 package com.example.lazypizza
 
+import BottomBarIcon
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -21,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,6 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -36,14 +42,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lazypizza.screens.HomeScreen
+import com.example.lazypizza.screens.MenuScreen
 import com.example.lazypizza.screens.PizzaScreen
 import com.example.lazypizza.ui.theme.FontFamily
 import com.example.lazypizza.ui.theme.LazyPizzaTheme
 import com.example.lazypizza.ui.theme.Primary
+import com.example.lazypizza.ui.theme.SurfaceHigher
 import com.example.lazypizza.ui.theme.SurfaceHighest
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSecondary8
@@ -51,7 +59,6 @@ import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.Screen
 import kotlinx.coroutines.launch
-import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -69,12 +76,13 @@ class MainActivity : ComponentActivity() {
                 val homeViewModel = viewModel<HomeViewModel>()
                 val context = LocalContext.current
                 val isScreenWide = LocalConfiguration.current.screenWidthDp > 840
+                var currentTabSelected by rememberSaveable { mutableStateOf(Screen.MenuScreen) }
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopAppBar(
                             title = {
-                                if (homeViewModel.currentScreen.value == Screen.HomeScreen) {
+                                if (homeViewModel.currentScreen.value == Screen.MenuScreen) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -95,7 +103,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                if (homeViewModel.currentScreen.value == Screen.HomeScreen) {
+                                if (homeViewModel.currentScreen.value == Screen.MenuScreen) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -113,10 +121,12 @@ class MainActivity : ComponentActivity() {
                                             fontFamily = FontFamily,
                                             fontWeight = FontWeight.Normal,
                                             color = TextPrimary,
-                                            modifier = Modifier.clickable{
+                                            modifier = Modifier.clickable {
                                                 val phoneNumber = "tel:5553217890"
-                                                val intent = Intent(Intent.ACTION_DIAL,
-                                                    phoneNumber.toUri())
+                                                val intent = Intent(
+                                                    Intent.ACTION_DIAL,
+                                                    phoneNumber.toUri()
+                                                )
                                                 context.startActivity(intent)
                                             }
                                         )
@@ -129,7 +139,7 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(start = 15.dp).background(
                                             color = TextSecondary8, shape = CircleShape
                                         ).clickable {
-                                            homeViewModel.handleNavigation(Screen.HomeScreen)
+                                            homeViewModel.handleNavigation(Screen.MenuScreen)
                                         }
                                     ) {
                                         Icon(
@@ -146,7 +156,50 @@ class MainActivity : ComponentActivity() {
                             )
 
                         )
-                    }
+                    },
+                    bottomBar = {
+                        if (homeViewModel.currentScreen.value != Screen.PizzaScreen) {
+                            BottomAppBar(
+                                containerColor = SurfaceHigher,
+                                tonalElevation = 8.dp
+                            ) {
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceAround
+                                ) {
+                                    BottomBarIcon(
+                                        modifier = Modifier.weight(1f),
+                                        tabName = Screen.MenuScreen,
+                                        currentTabSelected = currentTabSelected,
+                                        tabIcon = R.drawable.ic_book,
+                                        onTabClick = { selectedTab ->
+                                            currentTabSelected = selectedTab
+                                            homeViewModel.handleNavigation(selectedTab)
+                                        }
+                                    )
+                                    BottomBarIcon(
+                                        modifier = Modifier.weight(1f),
+                                        tabName = Screen.CartScreen,
+                                        currentTabSelected = currentTabSelected,
+                                        tabIcon = R.drawable.ic_cart,
+                                        subLabel = null,
+                                        onTabClick = { selectedTab ->
+                                            currentTabSelected = selectedTab
+                                        }
+                                    )
+                                    BottomBarIcon(
+                                        modifier = Modifier.weight(1f),
+                                        tabName = Screen.OrderHistoryScreen,
+                                        currentTabSelected = currentTabSelected,
+                                        tabIcon = R.drawable.ic_history,
+                                        onTabClick = { selectedTab ->
+                                            currentTabSelected = selectedTab
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    },
                 ) { innerPadding ->
                     val scrollState = rememberLazyListState()
                     val gridState = rememberLazyGridState()
@@ -155,8 +208,8 @@ class MainActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center
                     ) {
                         when (homeViewModel.currentScreen.value) {
-                            Screen.HomeScreen ->
-                                HomeScreen(
+                            Screen.MenuScreen ->
+                                MenuScreen(
                                     modifier = Modifier,
                                     isScreenWide = isScreenWide,
                                     viewModel = homeViewModel,
@@ -169,6 +222,8 @@ class MainActivity : ComponentActivity() {
                                 viewModel = homeViewModel,
                                 isScreenWide = isScreenWide,
                             )
+
+                            else -> {}
                         }
 
                         if (homeViewModel.isLoading.value) {
