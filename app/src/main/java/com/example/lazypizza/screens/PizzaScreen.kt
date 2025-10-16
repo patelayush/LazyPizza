@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -40,6 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lazypizza.R
+import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.repository.MenuItem
 import com.example.lazypizza.repository.Pizza
 import com.example.lazypizza.ui.theme.FontFamily
@@ -52,7 +53,7 @@ import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.MenuStack
-import com.example.lazypizza.viewmodel.Screen
+import com.example.lazypizza.viewmodel.Tab
 import com.example.lazypizza.widescreens.WidePizzaScreenContent
 
 @Composable
@@ -66,7 +67,11 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
         } else {
             PizzaScreenContent(
                 pizza = viewModel.selectedPizza.value,
-                toppings = viewModel.menuItems.value?.toppings
+                toppings = viewModel.menuItems.value?.toppings,
+                addToCart = { cartItem ->
+                    viewModel.addToCart(cartItem)
+                    viewModel.switchTab(Tab.CartScreen)
+                }
             )
         }
     }
@@ -79,10 +84,12 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
 fun PizzaScreenContent(
     modifier: Modifier = Modifier,
     pizza: Pizza?,
-    toppings: List<MenuItem?>? = null,
+    toppings: List<MenuItem>? = null,
+    addToCart: (CartItem) -> Unit
 ) {
     Box(modifier.fillMaxSize()) {
         var cartTotal by rememberSaveable { mutableFloatStateOf(pizza?.price?.toFloat() ?: 0f) }
+        val toppingsSelected = rememberSaveable { mutableMapOf<MenuItem, Int>() }
         Column {
             MenuImage(
                 modifier = Modifier.fillMaxWidth().height(240.dp).background(SurfaceHighest),
@@ -131,7 +138,7 @@ fun PizzaScreenContent(
                 modifier = Modifier.fillMaxWidth().background(color = SurfaceHigher)
                     .padding(horizontal = 10.dp)
             ) {
-                items(toppings ?: emptyList<MenuItem?>()) { topping ->
+                itemsIndexed(toppings ?: emptyList<MenuItem?>()) { index, topping ->
                     var quantity by rememberSaveable { mutableIntStateOf(0) }
                     var cardSelected by rememberSaveable { mutableStateOf(false) }
                     Box(
@@ -143,8 +150,10 @@ fun PizzaScreenContent(
                                 if (quantity == 0) {
                                     quantity = 1
                                     cartTotal += (topping?.price?.toFloat() ?: 0f)
+                                    topping?.let { toppingsSelected.put(it, quantity) }
                                 }
                                 cardSelected = true
+
                             }.border(
                                 width = 1.dp,
                                 color = if (cardSelected) Primary else Outline,
@@ -182,6 +191,7 @@ fun PizzaScreenContent(
                                             quantity--
                                             cardSelected = quantity != 0
                                             cartTotal -= (topping?.price?.toFloat() ?: 0f)
+                                            topping?.let { toppingsSelected.put(it, quantity) }
                                         }
                                         .border(
                                             width = 1.dp,
@@ -227,6 +237,7 @@ fun PizzaScreenContent(
                                         ) {
                                             quantity++
                                             cartTotal += (topping?.price?.toFloat() ?: 0f)
+                                            topping?.let { toppingsSelected.put(it, quantity) }
                                         }
                                         .border(
                                             width = 1.dp,
@@ -258,7 +269,16 @@ fun PizzaScreenContent(
                 .padding(15.dp)
                 .padding(bottom = 10.dp),
             text = "Add to Cart for $${cartTotal}",
-            onCLick = {}
+            onCLick = {
+                addToCart(
+                    CartItem(
+                        item = MenuItem(pizza?.name, pizza?.price),
+                        itemTotal = cartTotal,
+                        quantity = 1,
+                        toppings = toppingsSelected
+                    )
+                )
+            }
         )
     }
 }
@@ -268,6 +288,7 @@ fun PizzaScreenContent(
 @Composable
 private fun PizzaScreenPreview() {
     PizzaScreenContent(
-        pizza = null
+        pizza = null,
+        addToCart = {}
     )
 }

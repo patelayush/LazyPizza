@@ -57,7 +57,7 @@ import com.example.lazypizza.ui.theme.TextSecondary8
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.MenuStack
-import com.example.lazypizza.viewmodel.Screen
+import com.example.lazypizza.viewmodel.Tab
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = {
                                 when (homeViewModel.currentTabSelected.value) {
-                                    Screen.MenuScreen -> {
+                                    Tab.MenuScreen -> {
                                         if (homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen) {
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
 
-                                    Screen.CartScreen -> {
+                                    Tab.CartScreen -> {
                                         Text(
                                             text = "Cart",
                                             fontSize = 16.sp,
@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
 
-                                    Screen.OrderHistoryScreen -> {
+                                    Tab.OrderHistoryScreen -> {
                                         Text(
                                             text = "Order History",
                                             fontSize = 16.sp,
@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             actions = {
-                                if (homeViewModel.currentTabSelected.value == Screen.MenuScreen
+                                if (homeViewModel.currentTabSelected.value == Tab.MenuScreen
                                     && homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen
                                 ) {
                                     Row(
@@ -198,14 +198,15 @@ class MainActivity : ComponentActivity() {
                                     Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceAround
                                 ) {
-                                    Screen.entries.forEach { screen ->
+                                    Tab.entries.forEach { tab ->
                                         BottomBarIcon(
                                             modifier = Modifier.weight(1f),
-                                            tabName = screen,
+                                            tabName = tab,
                                             currentTabSelected = homeViewModel.currentTabSelected.value,
-                                            tabIcon = screen.icon,
+                                            subLabel = if (tab == Tab.CartScreen) homeViewModel.cartItems.size.takeIf { it > 0 } else null,
+                                            tabIcon = tab.icon,
                                             onTabClick = { selectedTab ->
-                                                if (screen == Screen.MenuScreen) {
+                                                if (tab == Tab.MenuScreen) {
                                                     homeViewModel.handleMenuStackNavigation(
                                                         MenuStack.MenuScreen
                                                     )
@@ -226,7 +227,7 @@ class MainActivity : ComponentActivity() {
                         contentAlignment = Alignment.Center
                     ) {
                         when (homeViewModel.currentTabSelected.value) {
-                            Screen.MenuScreen ->
+                            Tab.MenuScreen ->
                                 when (homeViewModel.currentMenuStackScreen.value) {
                                     MenuStack.MenuScreen -> MenuScreen(
                                         modifier = Modifier,
@@ -243,13 +244,13 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
 
-                            Screen.CartScreen -> CartScreen(
+                            Tab.CartScreen -> CartScreen(
                                 modifier = Modifier,
                                 viewModel = homeViewModel,
                                 isScreenWide = isScreenWide,
                             )
 
-                            Screen.OrderHistoryScreen -> OrderHistoryScreen(
+                            Tab.OrderHistoryScreen -> OrderHistoryScreen(
                                 modifier = Modifier,
                                 viewModel = homeViewModel,
                                 isScreenWide = isScreenWide,

@@ -7,6 +7,7 @@ data class Cart(
 
 data class CartItem(
     val item: MenuItem,
+    val itemTotal: Float,
     val quantity: Int,
-    val toppings: List<MenuItem>? = null
+    val toppings: Map<MenuItem, Int>? = null
 )

@@ -16,7 +16,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import kotlinx.coroutines.launch
 
-enum class Screen(val title: String, val icon: Int? = null) {
+enum class Tab(val title: String, val icon: Int? = null) {
     MenuScreen("Menu", R.drawable.ic_book),
     CartScreen("Cart", R.drawable.ic_cart),
     OrderHistoryScreen("History", R.drawable.ic_history)
@@ -42,7 +42,7 @@ class HomeViewModel() : ViewModel() {
     var currentMenuStackScreen = mutableStateOf<MenuStack>(MenuStack.MenuScreen)
         private set
 
-    var currentTabSelected = mutableStateOf<Screen>(Screen.MenuScreen)
+    var currentTabSelected = mutableStateOf<Tab>(Tab.MenuScreen)
         private set
 
     var cartTotal = mutableFloatStateOf(0f)
@@ -74,7 +74,17 @@ class HomeViewModel() : ViewModel() {
         currentMenuStackScreen.value = screen
     }
 
-    fun switchTab(screen: Screen) {
-        currentTabSelected.value = screen
+    fun switchTab(tab: Tab) {
+        currentTabSelected.value = tab
+        currentMenuStackScreen.value = MenuStack.MenuScreen
+    }
+
+    fun addToCart(cartItem: CartItem) {
+        cartItems.add(cartItem)
+        //  cartItems.add(CartItem(item, itemTotal, toppings = ))
+    }
+
+    fun getCheckoutPrice(): Float {
+       return cartItems.sumOf { it.itemTotal.toDouble() }.toFloat()
     }
 }

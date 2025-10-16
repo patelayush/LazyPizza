@@ -16,6 +16,7 @@ fun WideCartScreenContent(
     modifier: Modifier = Modifier,
     cartItems: SnapshotStateList<CartItem>,
     backToMenu: () -> Unit,
+    proceedToCheckout: () -> Unit
 ) {
     Box(modifier.fillMaxSize()) {
         if (cartItems.isEmpty()) {
@@ -35,6 +36,7 @@ fun WideCartScreenContent(
 private fun WideCartScreenPreview() {
     WideCartScreenContent(
         cartItems = mutableListOf<CartItem>() as SnapshotStateList<CartItem>,
-        backToMenu = {}
+        backToMenu = {},
+        proceedToCheckout = {}
     )
 }

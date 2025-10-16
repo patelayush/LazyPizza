@@ -5,7 +5,7 @@ data class LazyPizzaResponse(
     val iceCreams: List<MenuItem?>? = null,
     val pizzas: List<Pizza?>? = null,
     val sauces: List<MenuItem?>? = null,
-    val toppings: List<MenuItem?>? = null
+    val toppings: List<MenuItem>? = null
 )
 
 val menuCategories = listOf(

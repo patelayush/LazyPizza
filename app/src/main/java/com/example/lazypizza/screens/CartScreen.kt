@@ -1,7 +1,6 @@
 package com.example.lazypizza.screens
 
 import GradientButton
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,12 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.ui.theme.FontFamily
-import com.example.lazypizza.ui.theme.SurfaceHigher
 import com.example.lazypizza.ui.theme.SurfaceHighest
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
-import com.example.lazypizza.viewmodel.Screen
+import com.example.lazypizza.viewmodel.Tab
 import com.example.lazypizza.widescreens.WideCartScreenContent
 
 @Composable
@@ -34,14 +32,21 @@ fun CartScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreen
             WideCartScreenContent(
                 cartItems = viewModel.cartItems,
                 backToMenu = {
-                    viewModel.switchTab(Screen.MenuScreen)
+                    viewModel.switchTab(Tab.MenuScreen)
+                },
+                proceedToCheckout = {
+
                 }
             )
         } else {
             CartScreenContent(
-                cartItems = viewModel.cartItems,
+                modifier = Modifier.padding(bottom = 80.dp),
+                        cartItems = viewModel . cartItems,
                 backToMenu = {
-                    viewModel.switchTab(Screen.MenuScreen)
+                    viewModel.switchTab(Tab.MenuScreen)
+                },
+                proceedToCheckout = {
+
                 }
             )
         }
@@ -53,6 +58,7 @@ fun CartScreenContent(
     modifier: Modifier = Modifier,
     cartItems: SnapshotStateList<CartItem>,
     backToMenu: () -> Unit,
+    proceedToCheckout: () -> Unit
 ) {
     Box(modifier.fillMaxSize()) {
         if (cartItems.isEmpty()) {
@@ -61,7 +67,15 @@ fun CartScreenContent(
                 backToMenu = backToMenu
             )
         } else {
-
+            GradientButton(
+                modifier = Modifier.padding(15.dp).padding(bottom = 10.dp)
+                    .align(Alignment.BottomCenter).fillMaxWidth(),
+                text = "Proceed to Checkout ($${
+                    "%.2f".format(
+                        cartItems.sumOf { it.itemTotal.toDouble() })
+                })",
+                onCLick = proceedToCheckout
+            )
         }
     }
 }
@@ -101,6 +115,7 @@ fun EmptyCart(modifier: Modifier, backToMenu: () -> Unit) {
 private fun CartScreenPreview() {
     CartScreenContent(
         cartItems = mutableListOf<CartItem>() as SnapshotStateList<CartItem>,
-        backToMenu = {}
+        backToMenu = {},
+        proceedToCheckout = {}
     )
 }

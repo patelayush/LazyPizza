@@ -22,11 +22,14 @@ import com.example.lazypizza.ui.theme.SurfaceHighest
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
-import com.example.lazypizza.viewmodel.Screen
 import com.example.lazypizza.widescreens.WideOrderHistoryScreenContent
 
 @Composable
-fun OrderHistoryScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
+fun OrderHistoryScreen(
+    modifier: Modifier = Modifier,
+    viewModel: HomeViewModel,
+    isScreenWide: Boolean
+) {
     Box(modifier.fillMaxSize().background(SurfaceHighest)) {
         if (isScreenWide) {
             WideOrderHistoryScreenContent(
@@ -39,7 +42,7 @@ fun OrderHistoryScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, 
             OrderHistoryScreenContent(
                 cartItems = viewModel.cartItems,
                 loginClicked = {
-                   //TODO()
+                    //TODO()
                 }
             )
         }

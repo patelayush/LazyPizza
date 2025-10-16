@@ -24,16 +24,16 @@ import com.example.lazypizza.ui.theme.SurfaceHigher
 import com.example.lazypizza.ui.theme.TextOnPrimary
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
-import com.example.lazypizza.viewmodel.Screen
+import com.example.lazypizza.viewmodel.Tab
 
 @Composable
 fun BottomBarIcon(
     modifier: Modifier = Modifier,
-    tabName: Screen,
+    tabName: Tab,
     tabIcon: Int? = null,
-    subLabel: String? = null,
-    currentTabSelected: Screen,
-    onTabClick: (Screen) -> Unit,
+    subLabel: Int? = null,
+    currentTabSelected: Tab,
+    onTabClick: (Tab) -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -71,7 +71,7 @@ fun BottomBarIcon(
                         ).padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = subLabel,
+                        text = subLabel.toString(),
                         fontSize = 11.sp,
                         fontFamily = FontFamily,
                         lineHeight = 1.em,
