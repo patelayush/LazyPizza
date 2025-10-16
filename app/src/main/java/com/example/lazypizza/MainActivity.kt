@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -44,6 +45,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lazypizza.screens.CartScreen
 import com.example.lazypizza.screens.MenuScreen
+import com.example.lazypizza.screens.OrderHistory
 import com.example.lazypizza.screens.PizzaScreen
 import com.example.lazypizza.ui.theme.FontFamily
 import com.example.lazypizza.ui.theme.LazyPizzaTheme
@@ -79,28 +81,58 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         TopAppBar(
                             title = {
-                                if (homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Image(
-                                            painter = painterResource(R.drawable.logo_bold),
-                                            contentDescription = "",
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                when (homeViewModel.currentTabSelected.value) {
+                                    Screen.MenuScreen -> {
+                                        if (homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(R.drawable.logo_bold),
+                                                    contentDescription = "",
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Text(
+                                                    text = "Lazy Pizza",
+                                                    fontSize = 16.sp,
+                                                    fontFamily = FontFamily,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = TextPrimary
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    Screen.CartScreen -> {
                                         Text(
-                                            text = "Lazy Pizza",
+                                            text = "Cart",
                                             fontSize = 16.sp,
                                             fontFamily = FontFamily,
-                                            fontWeight = FontWeight.Bold,
-                                            color = TextPrimary
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextPrimary,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+
+                                    Screen.OrderHistoryScreen -> {
+                                        Text(
+                                            text = "Order History",
+                                            fontSize = 16.sp,
+                                            fontFamily = FontFamily,
+                                            fontWeight = FontWeight.Medium,
+                                            color = TextPrimary,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }
                             },
                             actions = {
-                                if (homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen) {
+                                if (homeViewModel.currentTabSelected.value == Screen.MenuScreen
+                                    && homeViewModel.currentMenuStackScreen.value == MenuStack.MenuScreen
+                                ) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -217,7 +249,11 @@ class MainActivity : ComponentActivity() {
                                 isScreenWide = isScreenWide,
                             )
 
-                            else -> {}
+                            Screen.OrderHistoryScreen -> OrderHistory(
+                                modifier = Modifier,
+                                viewModel = homeViewModel,
+                                isScreenWide = isScreenWide,
+                            )
                         }
 
                         if (homeViewModel.isLoading.value) {
