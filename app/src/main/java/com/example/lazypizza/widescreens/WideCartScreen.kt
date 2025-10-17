@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.lazypizza.repository.CartItem
+import com.example.lazypizza.repository.MenuItem
 import com.example.lazypizza.screens.EmptyCart
 
 @Composable
@@ -16,7 +17,10 @@ fun WideCartScreenContent(
     modifier: Modifier = Modifier,
     cartItems: SnapshotStateList<CartItem>,
     backToMenu: () -> Unit,
-    proceedToCheckout: () -> Unit
+    proceedToCheckout: () -> Unit,
+    quantityAdded: (MenuItem) -> Unit,
+    quantityRemoved: (MenuItem) -> Unit,
+    deleteCart: (MenuItem) -> Unit
 ) {
     Box(modifier.fillMaxSize()) {
         if (cartItems.isEmpty()) {
@@ -37,6 +41,9 @@ private fun WideCartScreenPreview() {
     WideCartScreenContent(
         cartItems = mutableListOf<CartItem>() as SnapshotStateList<CartItem>,
         backToMenu = {},
-        proceedToCheckout = {}
+        proceedToCheckout = {},
+        quantityAdded = {},
+        quantityRemoved = {},
+        deleteCart = {},
     )
 }

@@ -9,14 +9,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -33,13 +36,12 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -55,6 +57,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import bottomBarHeight
 import com.example.lazypizza.R
+import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.repository.LazyPizzaResponse
 import com.example.lazypizza.repository.MenuItem
 import com.example.lazypizza.repository.Pizza
@@ -92,20 +95,40 @@ fun MenuScreen(
         WideMenuScreenContent(
             modifier = modifier,
             menuItems = viewModel.menuItems.value,
+            cartItems = viewModel.cartItems,
             gridState = gridState,
             onPizzaSelected = {
                 viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
                 viewModel.handleMenuStackNavigation(MenuStack.PizzaScreen)
+            },
+            quantityAdded = { item ->
+                viewModel.increaseQuantity(item)
+            },
+            quantityRemoved = { item ->
+                viewModel.decreaseQuantity(item)
+            },
+            deleteCart = { item ->
+                viewModel.deleteCartItem(item)
             }
         )
     } else {
         MenuScreenContent(
             modifier = modifier,
             menuItems = viewModel.menuItems.value,
+            cartItems = viewModel.cartItems,
             scrollState = scrollState,
             onPizzaSelected = {
                 viewModel.selectedPizza.value = viewModel.menuItems.value?.pizzas?.get(it)
                 viewModel.handleMenuStackNavigation(MenuStack.PizzaScreen)
+            },
+            quantityAdded = { item ->
+                viewModel.increaseQuantity(item)
+            },
+            quantityRemoved = { item ->
+                viewModel.decreaseQuantity(item)
+            },
+            deleteCart = { item ->
+                viewModel.deleteCartItem(item)
             }
         )
     }
@@ -115,8 +138,12 @@ fun MenuScreen(
 fun MenuScreenContent(
     modifier: Modifier = Modifier,
     menuItems: LazyPizzaResponse?,
+    cartItems: SnapshotStateList<CartItem>?,
     scrollState: LazyListState,
-    onPizzaSelected: (Int) -> Unit
+    onPizzaSelected: (Int) -> Unit,
+    quantityAdded: (MenuItem) -> Unit,
+    quantityRemoved: (MenuItem) -> Unit,
+    deleteCart: (MenuItem) -> Unit
 ) {
     var searchedProduct by remember { mutableStateOf(TextFieldValue("")) }
     val coroutineScope = rememberCoroutineScope()
@@ -268,10 +295,17 @@ fun MenuScreenContent(
             }
             MenuItemCard(
                 item = drink,
-                categoryName = "drink",
-                quantityAdded = {},
-                quantityRemoved = {},
-                deleteCart = {},
+                quantity = cartItems?.firstOrNull { it.item.name == drink?.name }?.quantity ?: 0,
+                itemTotal = cartItems?.firstOrNull { it.item.name == drink?.name }?.itemTotal ?: 0f,
+                quantityAdded = {
+                    quantityAdded(it)
+                },
+                quantityRemoved = {
+                    quantityRemoved(it)
+                },
+                deleteCart = {
+                    deleteCart(it)
+                },
             )
         }
         itemsIndexed(
@@ -289,10 +323,17 @@ fun MenuScreenContent(
             }
             MenuItemCard(
                 item = sauce,
-                categoryName = "sauce",
-                quantityAdded = {},
-                quantityRemoved = {},
-                deleteCart = {},
+                quantity = cartItems?.firstOrNull { it.item.name == sauce?.name }?.quantity ?: 0,
+                itemTotal = cartItems?.firstOrNull { it.item.name == sauce?.name }?.itemTotal ?: 0f,
+                quantityAdded = {
+                    quantityAdded(it)
+                },
+                quantityRemoved = {
+                    quantityRemoved(it)
+                },
+                deleteCart = {
+                    deleteCart(it)
+                },
             )
         }
         itemsIndexed(
@@ -310,10 +351,18 @@ fun MenuScreenContent(
             }
             MenuItemCard(
                 item = icecream,
-                categoryName = "ice cream",
-                quantityAdded = {},
-                quantityRemoved = {},
-                deleteCart = {},
+                quantity = cartItems?.firstOrNull { it.item.name == icecream?.name }?.quantity ?: 0,
+                itemTotal = cartItems?.firstOrNull { it.item.name == icecream?.name }?.itemTotal
+                    ?: 0f,
+                quantityAdded = {
+                    quantityAdded(it)
+                },
+                quantityRemoved = {
+                    quantityRemoved(it)
+                },
+                deleteCart = {
+                    deleteCart(it)
+                },
             )
         }
         item {
@@ -341,11 +390,12 @@ fun PizzaCard(
     onPizzaSelected: () -> Unit
 ) {
     Card(
-        modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
+        modifier = Modifier.padding(top = 10.dp).height(IntrinsicSize.Min),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SurfaceHigher
         ),
+        elevation = CardDefaults.cardElevation(1.dp),
         onClick = onPizzaSelected
     ) {
         Row(
@@ -353,9 +403,11 @@ fun PizzaCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             MenuImage(
-                modifier = Modifier.size(120.dp).background(SurfaceHighest),
-                categoryName = "pizza",
-                itemName = item?.name
+                modifier = Modifier
+                    .width(120.dp)
+                    .fillMaxHeight()
+                    .background(SurfaceHighest),
+                imageUrl = item?.imageUrl ?: ""
             )
             Column(modifier = Modifier.padding(15.dp).heightIn(min = 90.dp)) {
                 Text(
@@ -388,29 +440,36 @@ fun PizzaCard(
 
 @Composable
 fun MenuItemCard(
+    modifier: Modifier = Modifier,
     item: MenuItem?,
-    categoryName: String,
-    quantityAdded: () -> Unit,
-    quantityRemoved: () -> Unit,
-    deleteCart: () -> Unit
+    quantity: Int,
+    itemTotal: Float,
+    forCart: Boolean = false,
+    toppings: Map<MenuItem, Int>? = null,
+    toppingsTotalPrice: Float? = null,
+    quantityAdded: (MenuItem) -> Unit,
+    quantityRemoved: (MenuItem) -> Unit,
+    deleteCart: (MenuItem) -> Unit
 ) {
-    var quantity by rememberSaveable { mutableIntStateOf(0) }
-    var itemTotal by rememberSaveable { mutableFloatStateOf(0f) }
+
     Card(
-        modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
+        modifier = modifier.padding(top = 10.dp).height(IntrinsicSize.Min),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = SurfaceHigher
-        )
+        ),
+        elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             MenuImage(
-                modifier = Modifier.size(120.dp).background(SurfaceHighest),
-                categoryName = categoryName,
-                itemName = item?.name
+                modifier = Modifier
+                    .width(120.dp)
+                    .fillMaxHeight()
+                    .background(SurfaceHighest),
+                imageUrl = item?.imageUrl ?: ""
             )
             Column(
                 modifier = Modifier.padding(15.dp).heightIn(min = 90.dp),
@@ -432,8 +491,7 @@ fun MenuItemCard(
                         modifier = Modifier
                             .alpha(if (quantity > 0) 1f else 0f)
                             .clickable(enabled = quantity > 0) {
-                                quantity = 0
-                                itemTotal = 0f
+                                item?.let { deleteCart(it) }
                             }
                             .border(
                                 width = 1.dp,
@@ -452,6 +510,16 @@ fun MenuItemCard(
                         )
                     }
 
+                }
+                toppings?.entries?.forEach { topping ->
+                    Text(
+                        text = "${topping.value} x ${topping.key.name}",
+                        fontSize = 14.sp,
+                        lineHeight = 1.em,
+                        fontFamily = FontFamily,
+                        fontWeight = FontWeight.Normal,
+                        color = TextSeconday,
+                    )
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -474,9 +542,8 @@ fun MenuItemCard(
                             Box(
                                 modifier = Modifier
                                     .alpha(if (quantity > 0) 1f else 0f)
-                                    .clickable(enabled = quantity > 0) {
-                                        quantity--
-                                        itemTotal -= (item?.price?.toFloat() ?: 0f)
+                                    .clickable(enabled = quantity > if (forCart) 1 else 0) {
+                                        item?.let { quantityRemoved(it) }
                                     }
                                     .border(
                                         width = 1.dp,
@@ -489,7 +556,7 @@ fun MenuItemCard(
                                 Icon(
                                     painter = painterResource(R.drawable.ic_minus),
                                     contentDescription = "Minus Icon",
-                                    tint = TextSeconday,
+                                    tint = if (forCart && quantity == 1) Outline else TextSeconday,
                                     modifier = Modifier
                                 )
                             }
@@ -504,8 +571,7 @@ fun MenuItemCard(
                                 modifier = Modifier
                                     .alpha(if (quantity > 0) 1f else 0f)
                                     .clickable(enabled = quantity > 0) {
-                                        quantity++
-                                        itemTotal += (item?.price?.toFloat() ?: 0f)
+                                        item?.let { quantityAdded(it) }
                                     }
                                     .border(
                                         width = 1.dp,
@@ -530,9 +596,8 @@ fun MenuItemCard(
                             border = BorderStroke(1.dp, Primary8),
                             onClick = {
                                 if (quantity == 0) {
-                                    quantity = 1
+                                    item?.let { quantityAdded(it) }
                                 }
-                                itemTotal = item?.price?.toFloat() ?: 0f
                             },
                             modifier = Modifier.alpha(
                                 if (quantity == 0) 1f else 0f
@@ -558,7 +623,11 @@ fun MenuItemCard(
                                 color = TextPrimary,
                             )
                             Text(
-                                text = "$quantity x $${item?.price ?: 0f}",
+                                text = "$quantity x $${
+                                    (item?.price?.plus(
+                                        toppingsTotalPrice ?: 0f
+                                    ))
+                                }",
                                 fontSize = 12.sp,
                                 fontFamily = FontFamily,
                                 fontWeight = FontWeight.Normal,
@@ -578,6 +647,11 @@ private fun MenuScreenPreview() {
     MenuScreenContent(
         modifier = Modifier,
         menuItems = null,
+        cartItems = null,
         scrollState = rememberLazyListState(),
-        onPizzaSelected = {})
+        onPizzaSelected = {},
+        quantityAdded = {},
+        quantityRemoved = {},
+        deleteCart = {},
+    )
 }

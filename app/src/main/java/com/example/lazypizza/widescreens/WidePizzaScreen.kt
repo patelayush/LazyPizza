@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,6 +30,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lazypizza.R
+import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.repository.MenuItem
 import com.example.lazypizza.repository.Pizza
 import com.example.lazypizza.ui.theme.FontFamily
@@ -57,7 +61,8 @@ import com.example.lazypizza.ui.theme.TextSeconday
 fun WidePizzaScreenContent(
     modifier: Modifier = Modifier,
     pizza: Pizza?,
-    toppings: List<MenuItem?>? = null
+    toppings: List<MenuItem?>? = null,
+    cartItems: SnapshotStateList<CartItem>? = null
 ) {
     Box(Modifier.fillMaxSize().background(color = SurfaceHighest)) {
         var cartTotal by rememberSaveable { mutableFloatStateOf(pizza?.price?.toFloat() ?: 0f) }
@@ -65,8 +70,7 @@ fun WidePizzaScreenContent(
             Column(Modifier.weight(1f)) {
                 MenuImage(
                     modifier = Modifier.fillMaxWidth().height(240.dp).background(SurfaceHighest),
-                    categoryName = "pizza",
-                    itemName = pizza?.name
+                    imageUrl = pizza?.imageUrl ?: ""
                 )
 
                 Text(
@@ -141,8 +145,7 @@ fun WidePizzaScreenContent(
                                         modifier = Modifier.background(Primary8, CircleShape)
                                             .padding(5.dp)
                                             .size(56.dp),
-                                        categoryName = "toppings",
-                                        itemName = topping?.name
+                                        imageUrl = topping?.name ?: ""
                                     )
                                     Text(
                                         text = topping?.name ?: "",

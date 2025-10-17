@@ -1,5 +1,6 @@
 package com.example.lazypizza.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.lazypizza.R
 import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.repository.LazyPizzaResponse
+import com.example.lazypizza.repository.MenuItem
 import com.example.lazypizza.repository.Pizza
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
@@ -26,8 +28,6 @@ enum class MenuStack(val title: String) {
     MenuScreen("Menu"),
     PizzaScreen("Pizza Details"),
 }
-
-const val imageBaseUrl = "https://pl-coding.com/wp-content/uploads/lazypizza/"
 
 class HomeViewModel() : ViewModel() {
     val databaseRef = Firebase.database.getReference("menu/")
@@ -81,10 +81,53 @@ class HomeViewModel() : ViewModel() {
 
     fun addToCart(cartItem: CartItem) {
         cartItems.add(cartItem)
-        //  cartItems.add(CartItem(item, itemTotal, toppings = ))
     }
 
     fun getCheckoutPrice(): Float {
-       return cartItems.sumOf { it.itemTotal.toDouble() }.toFloat()
+        return cartItems.sumOf { it.itemTotal.toDouble() }.toFloat()
+    }
+
+    fun increaseQuantity(item: MenuItem) {
+        val cartItemToUpdate = cartItems.find { it.item.name == item.name }
+        if (cartItemToUpdate != null) {
+            val updatedItem = cartItemToUpdate.copy(
+                quantity = cartItemToUpdate.quantity + 1,
+                itemTotal = cartItemToUpdate.itemTotal + ((cartItemToUpdate.item.price?.toFloat()
+                    ?: 0f) + cartItemToUpdate.getPizzaToppingTotalPrice())
+            )
+            val index = cartItems.indexOf(cartItemToUpdate)
+            if (index != -1) {
+                cartItems[index] = updatedItem
+            }
+        } else {
+            addToCart(
+                CartItem(
+                    item = item,
+                    itemTotal = item.price?.toFloat() ?: 0f,
+                    quantity = 1,
+                )
+            )
+        }
+    }
+
+    fun decreaseQuantity(item: MenuItem) {
+        val cartItemToUpdate = cartItems.find { it.item.name == item.name }
+        if (cartItemToUpdate != null && cartItemToUpdate.quantity > 1) {
+            val updatedItem = cartItemToUpdate.copy(
+                quantity = cartItemToUpdate.quantity - 1,
+                itemTotal = cartItemToUpdate.itemTotal - ((cartItemToUpdate.item.price?.toFloat()
+                    ?: 0f) + cartItemToUpdate.getPizzaToppingTotalPrice())
+            )
+            val index = cartItems.indexOf(cartItemToUpdate)
+            if (index != -1) {
+                cartItems[index] = updatedItem
+            }
+        } else if(cartItemToUpdate?.quantity == 1) {
+            deleteCartItem(item)
+        }
+    }
+
+    fun deleteCartItem(item: MenuItem) {
+        cartItems.removeAll { it.item.name == item.name }
     }
 }

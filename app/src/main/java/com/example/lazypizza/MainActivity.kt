@@ -3,6 +3,7 @@ package com.example.lazypizza
 import BottomBarIcon
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -47,6 +48,7 @@ import com.example.lazypizza.screens.CartScreen
 import com.example.lazypizza.screens.MenuScreen
 import com.example.lazypizza.screens.OrderHistoryScreen
 import com.example.lazypizza.screens.PizzaScreen
+import com.example.lazypizza.ui.theme.BG
 import com.example.lazypizza.ui.theme.FontFamily
 import com.example.lazypizza.ui.theme.LazyPizzaTheme
 import com.example.lazypizza.ui.theme.Primary
@@ -183,7 +185,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = SurfaceHighest
+                                containerColor = BG
                             )
 
                         )
@@ -244,11 +246,13 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
 
-                            Tab.CartScreen -> CartScreen(
-                                modifier = Modifier,
-                                viewModel = homeViewModel,
-                                isScreenWide = isScreenWide,
-                            )
+                            Tab.CartScreen -> {
+                                CartScreen(
+                                    modifier = Modifier,
+                                    viewModel = homeViewModel,
+                                    isScreenWide = isScreenWide,
+                                )
+                            }
 
                             Tab.OrderHistoryScreen -> OrderHistoryScreen(
                                 modifier = Modifier,

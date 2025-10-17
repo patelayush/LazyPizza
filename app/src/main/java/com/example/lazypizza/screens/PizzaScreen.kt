@@ -28,8 +28,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,12 +64,14 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
         if (isScreenWide) {
             WidePizzaScreenContent(
                 pizza = viewModel.selectedPizza.value,
-                toppings = viewModel.menuItems.value?.toppings
+                toppings = viewModel.menuItems.value?.toppings,
+                cartItems = viewModel.cartItems,
             )
         } else {
             PizzaScreenContent(
                 pizza = viewModel.selectedPizza.value,
                 toppings = viewModel.menuItems.value?.toppings,
+                cartItems = viewModel.cartItems,
                 addToCart = { cartItem ->
                     viewModel.addToCart(cartItem)
                     viewModel.switchTab(Tab.CartScreen)
@@ -84,6 +88,7 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
 fun PizzaScreenContent(
     modifier: Modifier = Modifier,
     pizza: Pizza?,
+    cartItems: SnapshotStateList<CartItem>? = null,
     toppings: List<MenuItem>? = null,
     addToCart: (CartItem) -> Unit
 ) {
@@ -93,8 +98,7 @@ fun PizzaScreenContent(
         Column {
             MenuImage(
                 modifier = Modifier.fillMaxWidth().height(240.dp).background(SurfaceHighest),
-                categoryName = "pizza",
-                itemName = pizza?.name
+                imageUrl = pizza?.imageUrl ?: ""
             )
             Column(
                 Modifier
@@ -144,7 +148,7 @@ fun PizzaScreenContent(
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 5.dp, vertical = 5.dp)
-                            .shadow(4.dp, shape = RoundedCornerShape(12.dp))
+                            .shadow(1.dp, shape = RoundedCornerShape(12.dp))
                             .background(color = SurfaceHigher, RoundedCornerShape(12.dp))
                             .clickable {
                                 if (quantity == 0) {
@@ -169,8 +173,7 @@ fun PizzaScreenContent(
                                 modifier = Modifier.background(Primary8, CircleShape)
                                     .padding(5.dp)
                                     .size(56.dp),
-                                categoryName = "toppings",
-                                itemName = topping?.name
+                                imageUrl = topping?.imageUrl ?: ""
                             )
                             Text(
                                 text = topping?.name ?: "",
@@ -272,7 +275,7 @@ fun PizzaScreenContent(
             onCLick = {
                 addToCart(
                     CartItem(
-                        item = MenuItem(pizza?.name, pizza?.price),
+                        item = MenuItem(pizza?.name, pizza?.price, pizza?.imageUrl),
                         itemTotal = cartTotal,
                         quantity = 1,
                         toppings = toppingsSelected

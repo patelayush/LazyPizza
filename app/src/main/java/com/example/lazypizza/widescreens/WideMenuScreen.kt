@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -43,7 +44,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lazypizza.R
+import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.repository.LazyPizzaResponse
+import com.example.lazypizza.repository.MenuItem
 import com.example.lazypizza.repository.menuCategories
 import com.example.lazypizza.screens.MenuItemCard
 import com.example.lazypizza.screens.PizzaCard
@@ -60,8 +63,12 @@ import kotlinx.coroutines.launch
 fun WideMenuScreenContent(
     modifier: Modifier = Modifier,
     menuItems: LazyPizzaResponse?,
+    cartItems: SnapshotStateList<CartItem>?,
     gridState: LazyGridState,
-    onPizzaSelected: (Int) -> Unit
+    onPizzaSelected: (Int) -> Unit,
+    quantityAdded: (MenuItem) -> Unit,
+    quantityRemoved: (MenuItem) -> Unit,
+    deleteCart: (MenuItem) -> Unit
 ) {
     var searchedProduct by remember { mutableStateOf(TextFieldValue("")) }
     val coroutineScope = rememberCoroutineScope()
@@ -186,7 +193,7 @@ fun WideMenuScreenContent(
                 menuItems?.pizzas?.filter { it?.name?.contains(searchedProduct.text, true) == true }
                     ?: listOf()) { index, pizza ->
                 Column {
-                    if(index ==0 || index == 1) {
+                    if (index == 0 || index == 1) {
                         Text(
                             text = "PIZZA",
                             fontSize = 12.sp,
@@ -206,7 +213,7 @@ fun WideMenuScreenContent(
                 menuItems?.drinks?.filter { it?.name?.contains(searchedProduct.text, true) == true }
                     ?: listOf()) { index, drink ->
                 Column {
-                    if(index ==0 || index == 1) {
+                    if (index == 0 || index == 1) {
                         Text(
                             text = "DRINKS",
                             fontSize = 12.sp,
@@ -219,10 +226,19 @@ fun WideMenuScreenContent(
 
                     MenuItemCard(
                         item = drink,
-                        categoryName = "drink",
-                        quantityAdded = {},
-                        quantityRemoved = {},
-                        deleteCart = {},
+                        quantity = cartItems?.firstOrNull { it.item.name == drink?.name }?.quantity
+                            ?: 0,
+                        itemTotal = cartItems?.firstOrNull { it.item.name == drink?.name }?.itemTotal
+                            ?: 0f,
+                        quantityAdded = {
+                            quantityAdded(it)
+                        },
+                        quantityRemoved = {
+                            quantityRemoved(it)
+                        },
+                        deleteCart = {
+                            deleteCart(it)
+                        },
                     )
                 }
             }
@@ -230,7 +246,7 @@ fun WideMenuScreenContent(
                 menuItems?.sauces?.filter { it?.name?.contains(searchedProduct.text, true) == true }
                     ?: listOf()) { index, sauce ->
                 Column {
-                    if(index ==0 || index == 1) {
+                    if (index == 0 || index == 1) {
                         Text(
                             text = "SAUCES",
                             fontSize = 12.sp,
@@ -243,10 +259,19 @@ fun WideMenuScreenContent(
 
                     MenuItemCard(
                         item = sauce,
-                        categoryName = "sauce",
-                        quantityAdded = {},
-                        quantityRemoved = {},
-                        deleteCart = {},
+                        quantity = cartItems?.firstOrNull { it.item.name == sauce?.name }?.quantity
+                            ?: 0,
+                        itemTotal = cartItems?.firstOrNull { it.item.name == sauce?.name }?.itemTotal
+                            ?: 0f,
+                        quantityAdded = {
+                            quantityAdded(it)
+                        },
+                        quantityRemoved = {
+                            quantityRemoved(it)
+                        },
+                        deleteCart = {
+                            deleteCart(it)
+                        },
                     )
                 }
             }
@@ -258,7 +283,7 @@ fun WideMenuScreenContent(
                 }
                     ?: listOf()) { index, icecream ->
                 Column {
-                    if(index ==0 || index == 1) {
+                    if (index == 0 || index == 1) {
                         Text(
                             text = "ICE CREAM",
                             fontSize = 12.sp,
@@ -271,10 +296,19 @@ fun WideMenuScreenContent(
 
                     MenuItemCard(
                         item = icecream,
-                        categoryName = "ice cream",
-                        quantityAdded = {},
-                        quantityRemoved = {},
-                        deleteCart = {},
+                        quantity = cartItems?.firstOrNull { it.item.name == icecream?.name }?.quantity
+                            ?: 0,
+                        itemTotal = cartItems?.firstOrNull { it.item.name == icecream?.name }?.itemTotal
+                            ?: 0f,
+                        quantityAdded = {
+                            quantityAdded(it)
+                        },
+                        quantityRemoved = {
+                            quantityRemoved(it)
+                        },
+                        deleteCart = {
+                            deleteCart(it)
+                        },
                     )
                 }
             }
@@ -291,7 +325,7 @@ fun WideMenuScreenContent(
                     )
                 }
             }
-            item{
+            item {
                 Spacer(Modifier.height(30.dp))
             }
         }
@@ -304,6 +338,11 @@ private fun WideMenuScreenPreview() {
     WideMenuScreenContent(
         modifier = Modifier,
         menuItems = null,
+        cartItems = null,
         gridState = rememberLazyGridState(),
-        onPizzaSelected = {})
+        onPizzaSelected = {},
+        quantityAdded = {},
+        quantityRemoved = {},
+        deleteCart = {},
+    )
 }
