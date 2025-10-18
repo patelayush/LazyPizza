@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lazypizza.repository.CartItem
 import com.example.lazypizza.ui.theme.FontFamily
+import com.example.lazypizza.ui.theme.SurfaceHigher
 import com.example.lazypizza.ui.theme.SurfaceHighest
 import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
@@ -30,7 +31,7 @@ fun OrderHistoryScreen(
     viewModel: HomeViewModel,
     isScreenWide: Boolean
 ) {
-    Box(modifier.fillMaxSize().background(SurfaceHighest)) {
+    Box(modifier.fillMaxSize().background(SurfaceHigher)) {
         if (isScreenWide) {
             WideOrderHistoryScreenContent(
                 cartItems = viewModel.cartItems,

@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -65,13 +64,15 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
             WidePizzaScreenContent(
                 pizza = viewModel.selectedPizza.value,
                 toppings = viewModel.menuItems.value?.toppings,
-                cartItems = viewModel.cartItems,
+                addToCart = { cartItem ->
+                    viewModel.addToCart(cartItem)
+                    viewModel.switchTab(Tab.CartScreen)
+                }
             )
         } else {
             PizzaScreenContent(
                 pizza = viewModel.selectedPizza.value,
                 toppings = viewModel.menuItems.value?.toppings,
-                cartItems = viewModel.cartItems,
                 addToCart = { cartItem ->
                     viewModel.addToCart(cartItem)
                     viewModel.switchTab(Tab.CartScreen)
@@ -88,7 +89,6 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
 fun PizzaScreenContent(
     modifier: Modifier = Modifier,
     pizza: Pizza?,
-    cartItems: SnapshotStateList<CartItem>? = null,
     toppings: List<MenuItem>? = null,
     addToCart: (CartItem) -> Unit
 ) {

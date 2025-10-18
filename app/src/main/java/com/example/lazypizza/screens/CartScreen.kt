@@ -57,20 +57,41 @@ fun CartScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreen
         if (isScreenWide) {
             WideCartScreenContent(
                 cartItems = viewModel.cartItems,
+                shuffledRecs = remember(viewModel.cartItems.size) {viewModel.menuItems.value?.getShuffledRecs()?.toMutableList()
+                    ?.subtract(viewModel.cartItems.map { it.item }.toList())?.toList()},
                 backToMenu = {
                     viewModel.switchTab(Tab.MenuScreen)
                 },
                 proceedToCheckout = {
 
                 },
-                quantityAdded = { item ->
-                    viewModel.increaseQuantity(item)
+                quantityAdded = { index ->
+                    val item = viewModel.cartItems[index]
+                    viewModel.cartItems[index] = item.copy(
+                        quantity = item.quantity + 1,
+                        itemTotal = item.itemTotal + ((item.item.price?.toFloat()
+                            ?: 0f) + item.getPizzaToppingTotalPrice())
+                    )
                 },
-                quantityRemoved = { item ->
-                    viewModel.decreaseQuantity(item)
+                quantityRemoved = { index ->
+                    val item = viewModel.cartItems[index]
+                    viewModel.cartItems[index] = item.copy(
+                        quantity = item.quantity - 1,
+                        itemTotal = item.itemTotal - ((item.item.price?.toFloat()
+                            ?: 0f) + item.getPizzaToppingTotalPrice())
+                    )
                 },
-                deleteCart = { item ->
-                    viewModel.deleteCartItem(item)
+                deleteCart = { index ->
+                    viewModel.cartItems.removeAt(index)
+                },
+                addToCart = { item ->
+                    viewModel.addToCart(
+                        CartItem(
+                            item = item,
+                            itemTotal = item.price?.toFloat() ?: 0f,
+                            quantity = 1,
+                        )
+                    )
                 }
             )
         } else {

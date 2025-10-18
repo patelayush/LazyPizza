@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -30,7 +28,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,7 +59,7 @@ fun WidePizzaScreenContent(
     modifier: Modifier = Modifier,
     pizza: Pizza?,
     toppings: List<MenuItem?>? = null,
-    cartItems: SnapshotStateList<CartItem>? = null
+    addToCart: (CartItem) -> Unit
 ) {
     Box(Modifier.fillMaxSize().background(color = SurfaceHighest)) {
         var cartTotal by rememberSaveable { mutableFloatStateOf(pizza?.price?.toFloat() ?: 0f) }
@@ -94,9 +91,15 @@ fun WidePizzaScreenContent(
             Box(Modifier.weight(1f)) {
                 Column(
                     Modifier.fillMaxWidth()
-                        .shadow(4.dp, shape = RoundedCornerShape(
-                            topStart = 12.dp, bottomStart = 12.dp))
-                        .background(color = SurfaceHigher, shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp))
+                        .shadow(
+                            4.dp, shape = RoundedCornerShape(
+                                topStart = 12.dp, bottomStart = 12.dp
+                            )
+                        )
+                        .background(
+                            color = SurfaceHigher,
+                            shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
+                        )
                         .padding(horizontal = 10.dp, vertical = 15.dp)
                 ) {
                     Text(
@@ -145,7 +148,7 @@ fun WidePizzaScreenContent(
                                         modifier = Modifier.background(Primary8, CircleShape)
                                             .padding(5.dp)
                                             .size(56.dp),
-                                        imageUrl = topping?.name ?: ""
+                                        imageUrl = topping?.imageUrl ?: ""
                                     )
                                     Text(
                                         text = topping?.name ?: "",
@@ -227,7 +230,7 @@ fun WidePizzaScreenContent(
                                             Icon(
                                                 painter = painterResource(R.drawable.ic_plus),
                                                 contentDescription = "Plus Icon",
-                                                tint = if(quantity < 3) TextSeconday else Outline,
+                                                tint = if (quantity < 3) TextSeconday else Outline,
                                                 modifier = Modifier
                                             )
                                         }
@@ -240,7 +243,8 @@ fun WidePizzaScreenContent(
                     }
                 }
                 Box(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(horizontal = 15.dp).padding(bottom = 20.dp)
+                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+                        .padding(horizontal = 15.dp).padding(bottom = 20.dp)
                         .background(
                             brush = Brush.linearGradient(
                                 listOf(
@@ -274,6 +278,7 @@ fun WidePizzaScreenContent(
 @Composable
 private fun WidePizzaScreenPreview() {
     WidePizzaScreenContent(
-        pizza = null
+        pizza = null,
+        addToCart = {}
     )
 }
