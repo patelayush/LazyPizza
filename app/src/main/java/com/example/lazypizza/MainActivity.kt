@@ -86,85 +86,88 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 val isScreenWide = LocalConfiguration.current.screenWidthDp > 840
                 Row {
-                    NavigationRail(
-                        modifier = Modifier.fillMaxHeight(),
-                        containerColor = SurfaceHigher,
-                        contentColor = Primary8
-                    ) {
-                        Spacer(Modifier.weight(1f))
-                        Tab.entries.forEach { tab ->
-                            NavigationRailItem(
-                                colors = NavigationRailItemDefaults.colors(
-                                    indicatorColor = Primary8
-                                ),
-                                selected = tab == homeViewModel.currentTabSelected.value,
-                                alwaysShowLabel = true,
-                                icon = {
-                                    Box {
-                                        tab.icon?.let {
-                                            Box(
-                                                modifier = Modifier.background(
-                                                    color = if (homeViewModel.currentTabSelected.value == tab) Primary8 else SurfaceHigher,
-                                                    shape = CircleShape
-                                                ).padding(10.dp)
-                                            ) {
-                                                Image(
-                                                    painter = painterResource(it),
-                                                    contentDescription = "Menu",
-                                                    colorFilter = ColorFilter.tint(
-                                                        if (homeViewModel.currentTabSelected.value == tab) Primary else TextSeconday
-                                                    ),
-                                                    modifier = Modifier.size(22.dp)
-                                                )
+                    if(isScreenWide) {
+                        NavigationRail(
+                            modifier = Modifier.fillMaxHeight(),
+                            containerColor = SurfaceHigher,
+                            contentColor = Primary8
+                        ) {
+                            Spacer(Modifier.weight(1f))
+                            Tab.entries.forEach { tab ->
+                                NavigationRailItem(
+                                    colors = NavigationRailItemDefaults.colors(
+                                        indicatorColor = Primary8
+                                    ),
+                                    selected = tab == homeViewModel.currentTabSelected.value,
+                                    alwaysShowLabel = true,
+                                    icon = {
+                                        Box {
+                                            tab.icon?.let {
+                                                Box(
+                                                    modifier = Modifier.background(
+                                                        color = if (homeViewModel.currentTabSelected.value == tab) Primary8 else SurfaceHigher,
+                                                        shape = CircleShape
+                                                    ).padding(10.dp)
+                                                ) {
+                                                    Image(
+                                                        painter = painterResource(it),
+                                                        contentDescription = "Menu",
+                                                        colorFilter = ColorFilter.tint(
+                                                            if (homeViewModel.currentTabSelected.value == tab) Primary else TextSeconday
+                                                        ),
+                                                        modifier = Modifier.size(22.dp)
+                                                    )
+                                                }
+                                            }
+                                            if (tab == Tab.CartScreen) {
+                                                homeViewModel.cartItems.takeIf { it.isNotEmpty() }
+                                                    ?.let {
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .align(Alignment.TopEnd)
+                                                                .background(
+                                                                    color = Primary,
+                                                                    shape = CircleShape
+                                                                ).padding(
+                                                                    horizontal = 6.dp,
+                                                                    vertical = 2.dp
+                                                                )
+                                                        ) {
+                                                            Text(
+                                                                text = homeViewModel.cartItems.size.toString(),
+                                                                fontSize = 11.sp,
+                                                                fontFamily = FontFamily,
+                                                                lineHeight = 1.em,
+                                                                fontWeight = FontWeight.Medium,
+                                                                color = TextOnPrimary
+                                                            )
+                                                        }
+                                                    }
                                             }
                                         }
-                                        if (tab == Tab.CartScreen) {
-                                            homeViewModel.cartItems.takeIf { it.isNotEmpty() }
-                                                ?.let {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .align(Alignment.TopEnd)
-                                                            .background(
-                                                                color = Primary,
-                                                                shape = CircleShape
-                                                            ).padding(
-                                                                horizontal = 6.dp, vertical = 2.dp
-                                                            )
-                                                    ) {
-                                                        Text(
-                                                            text = homeViewModel.cartItems.size.toString(),
-                                                            fontSize = 11.sp,
-                                                            fontFamily = FontFamily,
-                                                            lineHeight = 1.em,
-                                                            fontWeight = FontWeight.Medium,
-                                                            color = TextOnPrimary
-                                                        )
-                                                    }
-                                                }
-                                        }
-                                    }
-                                },
-                                label = {
-                                    Text(
-                                        text = tab.title.toString(),
-                                        fontSize = 11.sp,
-                                        fontFamily = FontFamily,
-                                        lineHeight = 1.em,
-                                        fontWeight = FontWeight.Medium,
-                                        color = if (tab == homeViewModel.currentTabSelected.value) TextPrimary else TextSeconday
-                                    )
-                                },
-                                onClick = {
-                                    if (tab == Tab.MenuScreen) {
-                                        homeViewModel.handleMenuStackNavigation(
-                                            MenuStack.MenuScreen
+                                    },
+                                    label = {
+                                        Text(
+                                            text = tab.title.toString(),
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily,
+                                            lineHeight = 1.em,
+                                            fontWeight = FontWeight.Medium,
+                                            color = if (tab == homeViewModel.currentTabSelected.value) TextPrimary else TextSeconday
                                         )
-                                    }
-                                    homeViewModel.switchTab(tab)
-                                },
-                            )
+                                    },
+                                    onClick = {
+                                        if (tab == Tab.MenuScreen) {
+                                            homeViewModel.handleMenuStackNavigation(
+                                                MenuStack.MenuScreen
+                                            )
+                                        }
+                                        homeViewModel.switchTab(tab)
+                                    },
+                                )
+                            }
+                            Spacer(Modifier.weight(1f))
                         }
-                        Spacer(Modifier.weight(1f))
                     }
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),

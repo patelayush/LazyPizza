@@ -14,7 +14,7 @@ import com.example.lazypizza.screens.EmptyHistory
 @Composable
 fun WideOrderHistoryScreenContent(
     modifier: Modifier = Modifier,
-    cartItems: SnapshotStateList<CartItem>,
+    cartItems: MutableList<CartItem>,
     loginClicked: () -> Unit,
 ) {
     Box(modifier.fillMaxSize()) {

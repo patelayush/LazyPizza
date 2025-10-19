@@ -63,6 +63,8 @@ fun WidePizzaScreenContent(
 ) {
     Box(Modifier.fillMaxSize().background(color = SurfaceHighest)) {
         var cartTotal by rememberSaveable { mutableFloatStateOf(pizza?.price?.toFloat() ?: 0f) }
+        val toppingsSelected = rememberSaveable { mutableMapOf<MenuItem, Int>() }
+
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Column(Modifier.weight(1f)) {
                 MenuImage(
@@ -128,6 +130,7 @@ fun WidePizzaScreenContent(
                                         if (quantity == 0) {
                                             quantity = 1
                                             cartTotal += (topping?.price?.toFloat() ?: 0f)
+                                            topping?.let { toppingsSelected.put(it, quantity) }
                                         }
                                         cardSelected = true
                                     }.border(
@@ -169,6 +172,7 @@ fun WidePizzaScreenContent(
                                                     quantity--
                                                     cardSelected = quantity != 0
                                                     cartTotal -= (topping?.price?.toFloat() ?: 0f)
+                                                    topping?.let { toppingsSelected.put(it, quantity) }
                                                 }
                                                 .border(
                                                     width = 1.dp,
@@ -218,6 +222,7 @@ fun WidePizzaScreenContent(
                                                 ) {
                                                     quantity++
                                                     cartTotal += (topping?.price?.toFloat() ?: 0f)
+                                                    topping?.let { toppingsSelected.put(it, quantity) }
                                                 }
                                                 .border(
                                                     width = 1.dp,
@@ -254,7 +259,14 @@ fun WidePizzaScreenContent(
                             shape = RoundedCornerShape(100.dp)
                         )
                         .clickable {
-
+                            addToCart(
+                                CartItem(
+                                    item = MenuItem(pizza?.name, pizza?.price, pizza?.imageUrl),
+                                    itemTotal = cartTotal,
+                                    quantity = 1,
+                                    toppings = toppingsSelected.filter { it.value > 0 }
+                                )
+                            )
                         },
                     contentAlignment = Alignment.Center
                 ) {
