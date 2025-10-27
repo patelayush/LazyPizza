@@ -72,6 +72,7 @@ fun CartScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreen
                         itemTotal = item.itemTotal + ((item.item.price?.toFloat()
                             ?: 0f) + item.getPizzaToppingTotalPrice())
                     )
+                    viewModel.cartBadgeCount.intValue++
                 },
                 quantityRemoved = { index ->
                     val item = viewModel.cartItems[index]
@@ -80,8 +81,10 @@ fun CartScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreen
                         itemTotal = item.itemTotal - ((item.item.price?.toFloat()
                             ?: 0f) + item.getPizzaToppingTotalPrice())
                     )
+                    viewModel.cartBadgeCount.intValue--
                 },
                 deleteCart = { index ->
+                    viewModel.cartBadgeCount.intValue -= viewModel.cartItems[index].quantity
                     viewModel.cartItems.removeAt(index)
                 },
                 addToCart = { item ->
@@ -113,6 +116,7 @@ fun CartScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreen
                         itemTotal = item.itemTotal + ((item.item.price?.toFloat()
                             ?: 0f) + item.getPizzaToppingTotalPrice())
                     )
+                    viewModel.cartBadgeCount.intValue++
                 },
                 quantityRemoved = { index ->
                     val item = viewModel.cartItems[index]
@@ -121,8 +125,10 @@ fun CartScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreen
                         itemTotal = item.itemTotal - ((item.item.price?.toFloat()
                             ?: 0f) + item.getPizzaToppingTotalPrice())
                     )
+                    viewModel.cartBadgeCount.intValue--
                 },
                 deleteCart = { index ->
+                    viewModel.cartBadgeCount.intValue -= viewModel.cartItems[index].quantity
                     viewModel.cartItems.removeAt(index)
                 },
                 addToCart = { item ->

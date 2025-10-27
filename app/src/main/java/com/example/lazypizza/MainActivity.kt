@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
                                                                 )
                                                         ) {
                                                             Text(
-                                                                text = homeViewModel.cartItems.size.toString(),
+                                                                text = homeViewModel.cartBadgeCount.intValue.toString(),
                                                                 fontSize = 11.sp,
                                                                 fontFamily = FontFamily,
                                                                 lineHeight = 1.em,
@@ -302,7 +302,9 @@ class MainActivity : ComponentActivity() {
                                                 modifier = Modifier.weight(1f),
                                                 tabName = tab,
                                                 currentTabSelected = homeViewModel.currentTabSelected.value,
-                                                subLabel = if (tab == Tab.CartScreen) homeViewModel.cartItems.size.takeIf { it > 0 } else null,
+                                                subLabel = if (tab == Tab.CartScreen) {
+                                                    homeViewModel.cartBadgeCount.intValue.takeIf { it > 0 }
+                                                } else null,
                                                 tabIcon = tab.icon,
                                                 onTabClick = { selectedTab ->
                                                     if (tab == Tab.MenuScreen) {
@@ -370,7 +372,9 @@ class MainActivity : ComponentActivity() {
                             if (homeViewModel.snackbarMessage.value.isNotBlank()) {
                                 Snackbar(
                                     modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-                                        .padding(bottom = (if(!isScreenWide) bottomBarHeight else 0.dp) + 50.dp)
+                                        .padding(
+                                            bottom = (if (!isScreenWide) bottomBarHeight else 0.dp) + 50.dp
+                                        )
                                         .padding(horizontal = 20.dp)
                                 ) {
                                     Text(text = homeViewModel.snackbarMessage.value)

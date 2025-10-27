@@ -2,6 +2,7 @@ package com.example.lazypizza.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -48,7 +49,7 @@ class HomeViewModel() : ViewModel() {
     var currentTabSelected = mutableStateOf<Tab>(Tab.MenuScreen)
         private set
 
-    var cartTotal = mutableFloatStateOf(0f)
+    var cartBadgeCount = mutableIntStateOf(0)
     var cartItems = mutableStateListOf<CartItem>()
 
     fun fetchData() {
@@ -83,6 +84,7 @@ class HomeViewModel() : ViewModel() {
     }
 
     fun addToCart(cartItem: CartItem) {
+        cartBadgeCount.intValue++
         cartItems.add(cartItem)
     }
 
@@ -102,6 +104,7 @@ class HomeViewModel() : ViewModel() {
             if (index != -1) {
                 cartItems[index] = updatedItem
             }
+            cartBadgeCount.intValue++
         } else {
             addToCart(
                 CartItem(
@@ -125,12 +128,14 @@ class HomeViewModel() : ViewModel() {
             if (index != -1) {
                 cartItems[index] = updatedItem
             }
+            cartBadgeCount.intValue--
         } else if(cartItemToUpdate?.quantity == 1) {
             deleteCartItem(item)
         }
     }
 
     fun deleteCartItem(item: MenuItem) {
+        cartBadgeCount.intValue -= cartItems.find { it.item.name == item.name }?.quantity ?: 0
         cartItems.removeAll { it.item.name == item.name }
     }
 
