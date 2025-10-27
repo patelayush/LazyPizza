@@ -32,6 +32,7 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,6 +51,7 @@ import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import bottomBarHeight
 import com.example.lazypizza.screens.CartScreen
 import com.example.lazypizza.screens.MenuScreen
 import com.example.lazypizza.screens.OrderHistoryScreen
@@ -86,7 +88,7 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 val isScreenWide = LocalConfiguration.current.screenWidthDp > 840
                 Row {
-                    if(isScreenWide) {
+                    if (isScreenWide) {
                         NavigationRail(
                             modifier = Modifier.fillMaxHeight(),
                             containerColor = SurfaceHigher,
@@ -364,6 +366,15 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.size(50.dp),
                                     color = Primary
                                 )
+                            }
+                            if (homeViewModel.snackbarMessage.value.isNotBlank()) {
+                                Snackbar(
+                                    modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+                                        .padding(bottom = (if(!isScreenWide) bottomBarHeight else 0.dp) + 50.dp)
+                                        .padding(horizontal = 20.dp)
+                                ) {
+                                    Text(text = homeViewModel.snackbarMessage.value)
+                                }
                             }
                         }
                     }

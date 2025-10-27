@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 enum class Tab(val title: String, val icon: Int? = null) {
@@ -34,6 +35,8 @@ class HomeViewModel() : ViewModel() {
     val isLoading = mutableStateOf<Boolean>(false)
 
     val error = mutableStateOf<String>("")
+    var snackbarMessage = mutableStateOf("")
+        private set
 
     val menuItems = mutableStateOf<LazyPizzaResponse?>(null)
 
@@ -129,5 +132,13 @@ class HomeViewModel() : ViewModel() {
 
     fun deleteCartItem(item: MenuItem) {
         cartItems.removeAll { it.item.name == item.name }
+    }
+
+    fun showSnackbar(string: String) {
+        snackbarMessage.value = string
+        viewModelScope.launch {
+            delay(2000)
+            snackbarMessage.value = ""
+        }
     }
 }

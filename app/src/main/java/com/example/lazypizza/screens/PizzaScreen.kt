@@ -30,7 +30,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -54,8 +53,8 @@ import com.example.lazypizza.ui.theme.TextPrimary
 import com.example.lazypizza.ui.theme.TextSeconday
 import com.example.lazypizza.viewmodel.HomeViewModel
 import com.example.lazypizza.viewmodel.MenuStack
-import com.example.lazypizza.viewmodel.Tab
 import com.example.lazypizza.widescreens.WidePizzaScreenContent
+import pizzaAddedToCart
 
 @Composable
 fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScreenWide: Boolean) {
@@ -66,7 +65,8 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
                 toppings = viewModel.menuItems.value?.toppings,
                 addToCart = { cartItem ->
                     viewModel.addToCart(cartItem)
-                    viewModel.switchTab(Tab.CartScreen)
+                    viewModel.showSnackbar(pizzaAddedToCart)
+                    viewModel.handleMenuStackNavigation(MenuStack.MenuScreen)
                 }
             )
         } else {
@@ -75,7 +75,8 @@ fun PizzaScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel, isScree
                 toppings = viewModel.menuItems.value?.toppings,
                 addToCart = { cartItem ->
                     viewModel.addToCart(cartItem)
-                    viewModel.switchTab(Tab.CartScreen)
+                    viewModel.showSnackbar(pizzaAddedToCart)
+                    viewModel.handleMenuStackNavigation(MenuStack.MenuScreen)
                 }
             )
         }
